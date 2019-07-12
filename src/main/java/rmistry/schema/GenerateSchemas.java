@@ -18,7 +18,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-package com.mycompany;
+package rmistry.schema;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
@@ -26,9 +26,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.module.jsonSchema.JsonSchema;
 import com.fasterxml.jackson.module.jsonSchema.factories.SchemaFactoryWrapper;
 
-import com.mycompany.customschemafactory.CustomSchemaFactoryWrapper;
-import com.mycompany.customschemafactory.CustomSchemaFactoryWrapper.CustomAnySchema;
-import com.mycompany.customschemafactory.CustomSchemaFactoryWrapper.CustomObjectSchema;
+import rmistry.schema.CustomSchemaFactoryWrapper;
+import rmistry.schema.CustomSchemaFactoryWrapper.CustomAnySchema;
+import rmistry.schema.CustomSchemaFactoryWrapper.CustomObjectSchema;
 
 /**
  *

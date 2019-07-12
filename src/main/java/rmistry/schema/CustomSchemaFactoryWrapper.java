@@ -22,7 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-package com.mycompany.customschemafactory;
+package rmistry.schema;
 
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -50,8 +50,6 @@ import com.fasterxml.jackson.module.jsonSchema.types.AnySchema;
 import com.fasterxml.jackson.module.jsonSchema.types.ContainerTypeSchema;
 import com.fasterxml.jackson.module.jsonSchema.types.ObjectSchema;
 import com.fasterxml.jackson.module.jsonSchema.types.ReferenceSchema;
-
-import com.mycompany.GenerateSchemas;
 
 /**
  *

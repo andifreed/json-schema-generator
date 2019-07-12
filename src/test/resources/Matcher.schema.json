@@ -1,0 +1,76 @@
+{
+  "id": "urn:jsonschema:rmistry:schema:test:Matcher",
+  "type": "object",
+  "required": true,
+  "oneOf": [
+    {
+      "$ref": "urn:jsonschema:rmistry:schema:test:NotMatcher"
+    },
+    {
+      "$ref": "urn:jsonschema:rmistry:schema:test:OrMatcher"
+    },
+    {
+      "$ref": "urn:jsonschema:rmistry:schema:test:LongMatcher"
+    }
+  ],
+  "definitions": {
+    "urn:jsonschema:rmistry:schema:test:OrMatcher": {
+      "type": "object",
+      "id": "urn:jsonschema:rmistry:schema:test:OrMatcher",
+      "additionalProperties": false,
+      "properties": {
+        "type": {
+          "type": "string",
+          "required": true
+        },
+        "matchers": {
+          "type": "array",
+          "required": true,
+          "items": {
+            "type": "object",
+            "$ref": "urn:jsonschema:rmistry:schema:test:Matcher"
+          }
+        }
+      }
+    },
+    "urn:jsonschema:rmistry:schema:test:NotMatcher": {
+      "type": "object",
+      "id": "urn:jsonschema:rmistry:schema:test:NotMatcher",
+      "additionalProperties": false,
+      "properties": {
+        "type": {
+          "type": "string",
+          "required": true
+        },
+        "matcher": {
+          "type": "object",
+          "$ref": "urn:jsonschema:rmistry:schema:test:Matcher",
+          "required": true
+        }
+      }
+    },
+    "urn:jsonschema:rmistry:schema:test:LongMatcher": {
+      "type": "object",
+      "id": "urn:jsonschema:rmistry:schema:test:LongMatcher",
+      "additionalProperties": false,
+      "properties": {
+        "type": {
+          "type": "string",
+          "required": true
+        },
+        "greaterThan": {
+          "type": "integer"
+        },
+        "lessThan": {
+          "type": "integer"
+        },
+        "lessThanEquals": {
+          "type": "integer"
+        },
+        "greaterThanEquals": {
+          "type": "integer"
+        }
+      }
+    }
+  }
+}

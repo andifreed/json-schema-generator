@@ -1,0 +1,224 @@
+{
+  "type": "object",
+  "id": "urn:jsonschema:rmistry:schema:test:Root",
+  "properties": {
+    "rules": {
+      "type": "array",
+      "required": true,
+      "items": {
+        "type": "object",
+        "id": "urn:jsonschema:rmistry:schema:test:Rule",
+        "properties": {
+          "actions": {
+            "type": "array",
+            "required": true,
+            "items": {
+              "type": "object",
+              "$ref": "urn:jsonschema:rmistry:schema:test:AppAction"
+            }
+          },
+          "matcher": {
+            "type": "object",
+            "required": true,
+            "$ref": "urn:jsonschema:rmistry:schema:test:Matcher"
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "urn:jsonschema:rmistry:schema:test:AppAction": {
+      "id": "urn:jsonschema:rmistry:schema:test:AppAction",
+      "type": "object",
+      "required": true,
+      "oneOf": [
+        {
+          "$ref": "urn:jsonschema:rmistry:schema:test:AddActivityAppAction"
+        },
+        {
+          "$ref": "urn:jsonschema:rmistry:schema:test:AddNoteAppAction"
+        }
+      ]
+    },
+    "urn:jsonschema:rmistry:schema:test:AddActivityAppAction": {
+      "type": "object",
+      "id": "urn:jsonschema:rmistry:schema:test:AddActivityAppAction",
+      "additionalProperties": false,
+      "properties": {
+        "action": {
+          "type": "string",
+          "required": true
+        },
+        "addToParent": {
+          "type": "boolean"
+        },
+        "assignTo": {
+          "type": "object",
+          "required": true,
+          "$ref": "urn:jsonschema:rmistry:schema:test:AddActivityAppAction"
+        },
+        "description": {
+          "type": "string",
+          "required": true
+        },
+        "pattern": {
+          "type": "string",
+          "required": true
+        },
+        "subject": {
+          "type": "string",
+          "required": true
+        }
+      }
+    },
+    "urn:jsonschema:rmistry:schema:test:AddNoteAppAction": {
+      "type": "object",
+      "id": "urn:jsonschema:rmistry:schema:test:AddNoteAppAction",
+      "additionalProperties": false,
+      "properties": {
+        "action": {
+          "type": "string",
+          "required": true
+        },
+        "addToParent": {
+          "type": "boolean"
+        },
+        "markConfidential": {
+          "type": "boolean",
+          "required": true
+        },
+        "securityType": {
+          "type": "string",
+          "required": true
+        },
+        "subject": {
+          "type": "string",
+          "required": true
+        },
+        "topic": {
+          "type": "string",
+          "required": true
+        }
+      }
+    },
+    "urn:jsonschema:rmistry:schema:test:AssignTo": {
+      "id": "urn:jsonschema:rmistry:schema:test:AssignTo",
+      "type": "object",
+      "required": true,
+      "oneOf": [
+        {
+          "$ref": "urn:jsonschema:rmistry:schema:test:AssignToDefault"
+        },
+        {
+          "$ref": "urn:jsonschema:rmistry:schema:test:AssignToGroup"
+        }
+      ]
+    },
+    "urn:jsonschema:rmistry:schema:test:AssignToDefault": {
+      "type": "object",
+      "id": "urn:jsonschema:rmistry:schema:test:AssignToDefault",
+      "additionalProperties": false,
+      "properties": {
+        "target": {
+          "type": "string",
+          "required": true
+        },
+        "properties": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "urn:jsonschema:rmistry:schema:test:AssignToGroup": {
+      "type": "object",
+      "id": "urn:jsonschema:rmistry:schema:test:AssignToGroup",
+      "additionalProperties": false,
+      "properties": {
+        "target": {
+          "type": "string",
+          "required": true
+        },
+        "groupName": {
+          "type": "string",
+          "required": true
+        }
+      }
+    },
+    "urn:jsonschema:rmistry:schema:test:Matcher": {
+      "id": "urn:jsonschema:rmistry:schema:test:Matcher",
+      "type": "object",
+      "required": true,
+      "oneOf": [
+        {
+          "$ref": "urn:jsonschema:rmistry:schema:test:NotMatcher"
+        },
+        {
+          "$ref": "urn:jsonschema:rmistry:schema:test:OrMatcher"
+        },
+        {
+          "$ref": "urn:jsonschema:rmistry:schema:test:LongMatcher"
+        }
+      ]
+    },
+    "urn:jsonschema:rmistry:schema:test:OrMatcher": {
+      "type": "object",
+      "id": "urn:jsonschema:rmistry:schema:test:OrMatcher",
+      "additionalProperties": false,
+      "properties": {
+        "type": {
+          "type": "string",
+          "required": true
+        },
+        "matchers": {
+          "type": "array",
+          "required": true,
+          "items": {
+            "type": "object",
+            "$ref": "urn:jsonschema:rmistry:schema:test:Matcher"
+          }
+        }
+      }
+    },
+    "urn:jsonschema:rmistry:schema:test:NotMatcher": {
+      "type": "object",
+      "id": "urn:jsonschema:rmistry:schema:test:NotMatcher",
+      "additionalProperties": false,
+      "properties": {
+        "type": {
+          "type": "string",
+          "required": true
+        },
+        "matcher": {
+          "type": "object",
+          "$ref": "urn:jsonschema:rmistry:schema:test:Matcher",
+          "required": true
+        }
+      }
+    },
+    "urn:jsonschema:rmistry:schema:test:LongMatcher": {
+      "type": "object",
+      "id": "urn:jsonschema:rmistry:schema:test:LongMatcher",
+      "additionalProperties": false,
+      "properties": {
+        "type": {
+          "type": "string",
+          "required": true
+        },
+        "greaterThan": {
+          "type": "integer"
+        },
+        "lessThan": {
+          "type": "integer"
+        },
+        "lessThanEquals": {
+          "type": "integer"
+        },
+        "greaterThanEquals": {
+          "type": "integer"
+        }
+      }
+    }
+  }
+}
