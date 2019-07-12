@@ -4,9 +4,13 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.module.jsonSchema.JsonSchema;
 import org.apache.commons.io.IOUtils;
 import org.junit.Test;
+import rmistry.schema.test.AddActivityAppAction;
+import rmistry.schema.test.AddNoteAppAction;
 import rmistry.schema.test.AssignTo;
 import rmistry.schema.test.Matcher;
+import rmistry.schema.test.NotMatcher;
 import rmistry.schema.test.Root;
+import rmistry.schema.test.SimpleRoot;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -17,6 +21,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class SchemaGeneratorTest {
 
   @Test
+  public void testSimple() throws IOException {
+    doAClass(SimpleRoot.class);
+  }
+
+  @Test
   public void testComplex() throws IOException {
     doAClass(Root.class);
   }
@@ -24,6 +33,16 @@ public class SchemaGeneratorTest {
   @Test
   public void testSimpleSubClass() throws IOException {
     doAClass(AssignTo.class);
+  }
+
+  @Test
+  public void testSimplePropertySubClass() throws IOException {
+    doAClass(AddActivityAppAction.class);
+  }
+
+  @Test
+  public void testNotMatcherClass() throws IOException {
+    doAClass(NotMatcher.class);
   }
 
   @Test

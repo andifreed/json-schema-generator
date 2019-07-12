@@ -1,0 +1,103 @@
+{
+  "type" : "object",
+  "id" : "urn:jsonschema:rmistry:schema:test:NotMatcher",
+  "properties" : {
+    "matcher" : {
+      "type" : "object",
+      "required" : true,
+      "oneOf" : [ {
+        "$ref" : "urn:jsonschema:rmistry:schema:test:LongMatcher"
+      }, {
+        "$ref" : "urn:jsonschema:rmistry:schema:test:NotMatcher"
+      }, {
+        "$ref" : "urn:jsonschema:rmistry:schema:test:OrMatcher"
+      } ]
+    },
+    "type" : {
+      "type" : "string",
+      "required" : true
+    }
+  },
+  "definitions" : {
+    "urn:jsonschema:rmistry:schema:test:Matcher" : {
+      "type" : "object",
+      "required" : true,
+      "oneOf" : [ {
+        "$ref" : "urn:jsonschema:rmistry:schema:test:LongMatcher"
+      }, {
+        "$ref" : "urn:jsonschema:rmistry:schema:test:NotMatcher"
+      }, {
+        "$ref" : "urn:jsonschema:rmistry:schema:test:OrMatcher"
+      } ]
+    },
+    "urn:jsonschema:rmistry:schema:test:LongMatcher" : {
+      "type" : "object",
+      "id" : "urn:jsonschema:rmistry:schema:test:LongMatcher",
+      "additionalProperties" : false,
+      "properties" : {
+        "greaterThan" : {
+          "type" : "integer"
+        },
+        "greaterThanEquals" : {
+          "type" : "integer"
+        },
+        "lessThan" : {
+          "type" : "integer"
+        },
+        "lessThanEquals" : {
+          "type" : "integer"
+        },
+        "type" : {
+          "type" : "string",
+          "required" : true
+        }
+      }
+    },
+    "urn:jsonschema:rmistry:schema:test:NotMatcher" : {
+      "type" : "object",
+      "id" : "urn:jsonschema:rmistry:schema:test:NotMatcher",
+      "additionalProperties" : false,
+      "properties" : {
+        "matcher" : {
+          "type" : "object",
+          "id" : "urn:jsonschema:rmistry:schema:test:Matcher",
+          "required" : true,
+          "properties" : {
+            "type" : {
+              "type" : "string",
+              "required" : true
+            }
+          }
+        },
+        "type" : {
+          "type" : "string",
+          "required" : true
+        }
+      }
+    },
+    "urn:jsonschema:rmistry:schema:test:OrMatcher" : {
+      "type" : "object",
+      "id" : "urn:jsonschema:rmistry:schema:test:OrMatcher",
+      "additionalProperties" : false,
+      "properties" : {
+        "matchers" : {
+          "type" : "array",
+          "required" : true,
+          "items" : {
+            "type" : "object",
+            "id" : "urn:jsonschema:rmistry:schema:test:Matcher",
+            "properties" : {
+              "type" : {
+                "type" : "string",
+                "required" : true
+              }
+            }
+          }
+        },
+        "type" : {
+          "type" : "string"
+        }
+      }
+    }
+  }
+}

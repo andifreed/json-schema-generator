@@ -1,0 +1,83 @@
+{
+  "type" : "object",
+  "id" : "urn:jsonschema:rmistry:schema:test:AddActivityAppAction",
+  "properties" : {
+    "action" : {
+      "type" : "string",
+      "required" : true
+    },
+    "addToParent" : {
+      "type" : "boolean"
+    },
+    "assignTo" : {
+      "type" : "object",
+      "required" : true,
+      "oneOf" : [ {
+        "$ref" : "urn:jsonschema:rmistry:schema:test:AssignToDefault"
+      }, {
+        "$ref" : "urn:jsonschema:rmistry:schema:test:AssignToGroup"
+      } ]
+    },
+    "description" : {
+      "type" : "string",
+      "required" : true
+    },
+    "pattern" : {
+      "type" : "string",
+      "required" : true
+    },
+    "properties" : {
+      "type" : "object",
+      "additionalProperties" : {
+        "type" : "string"
+      }
+    },
+    "subject" : {
+      "type" : "string",
+      "required" : true
+    }
+  },
+  "definitions" : {
+    "urn:jsonschema:rmistry:schema:test:AssignTo" : {
+      "type" : "object",
+      "required" : true,
+      "oneOf" : [ {
+        "$ref" : "urn:jsonschema:rmistry:schema:test:AssignToDefault"
+      }, {
+        "$ref" : "urn:jsonschema:rmistry:schema:test:AssignToGroup"
+      } ]
+    },
+    "urn:jsonschema:rmistry:schema:test:AssignToDefault" : {
+      "type" : "object",
+      "id" : "urn:jsonschema:rmistry:schema:test:AssignToDefault",
+      "additionalProperties" : false,
+      "properties" : {
+        "properties" : {
+          "type" : "object",
+          "additionalProperties" : {
+            "type" : "string"
+          }
+        },
+        "target" : {
+          "type" : "string",
+          "required" : true
+        }
+      }
+    },
+    "urn:jsonschema:rmistry:schema:test:AssignToGroup" : {
+      "type" : "object",
+      "id" : "urn:jsonschema:rmistry:schema:test:AssignToGroup",
+      "additionalProperties" : false,
+      "properties" : {
+        "groupName" : {
+          "type" : "string",
+          "required" : true
+        },
+        "target" : {
+          "type" : "string",
+          "required" : true
+        }
+      }
+    }
+  }
+}

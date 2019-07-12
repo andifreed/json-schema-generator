@@ -1,4 +1,9 @@
 /*
+copied from https://gist.github.com/rrmistry/2246c959d1c9cc45894ecf55305c61fd
+license unchanged
+ */
+
+/*
 MIT License
 Copyright (c) 2019 Rohit Mistry
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -22,13 +27,15 @@ package rmistry.schema;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.module.jsonSchema.JsonSchema;
 import com.fasterxml.jackson.module.jsonSchema.factories.SchemaFactoryWrapper;
 
-import rmistry.schema.CustomSchemaFactoryWrapper;
 import rmistry.schema.CustomSchemaFactoryWrapper.CustomAnySchema;
 import rmistry.schema.CustomSchemaFactoryWrapper.CustomObjectSchema;
+
+import static com.fasterxml.jackson.databind.SerializationFeature.ORDER_MAP_ENTRIES_BY_KEYS;
 
 /**
  *
@@ -36,25 +43,27 @@ import rmistry.schema.CustomSchemaFactoryWrapper.CustomObjectSchema;
  */
 public class GenerateSchemas {
 
-  public static JsonSchema generateSchemaFromJavaClass(SchemaFactoryWrapper visitor, ObjectMapper mapper,
-                                                       Class<?> classToGenerate) throws JsonMappingException {
+  private static JsonSchema generateSchemaFromJavaClass(SchemaFactoryWrapper visitor, ObjectMapper mapper,
+                                                        Class<?> classToGenerate) throws JsonMappingException {
 
     mapper.acceptJsonFormatVisitor(mapper.constructType(classToGenerate), visitor);
 
-    JsonSchema schema = visitor.finalSchema();
+    @SuppressWarnings("UnnecessaryLocalVariable") JsonSchema schema = visitor.finalSchema();
 
     return schema;
   }
 
-  public static JsonSchema generateSchemaFromJavaClass(SchemaFactoryWrapper visitor, Class<?> classToGenerate)
-      throws JsonMappingException {
-    ObjectMapper mapper = new ObjectMapper();
+  static JsonSchema generateSchemaFromJavaClass(SchemaFactoryWrapper visitor, Class<?> classToGenerate)
+    throws JsonMappingException {
+    ObjectMapper mapper = new ObjectMapper()
+        .configure(MapperFeature.SORT_PROPERTIES_ALPHABETICALLY, true)
+        .enable(ORDER_MAP_ENTRIES_BY_KEYS);
 
     return generateSchemaFromJavaClass(visitor, mapper, classToGenerate);
   }
 
   public static JsonSchema generateSchemaFromJavaClass(Class<?> classToGenerate)
-      throws JsonMappingException, JsonProcessingException {
+    throws JsonProcessingException {
 
     CustomSchemaFactoryWrapper visitor = new CustomSchemaFactoryWrapper();
 
