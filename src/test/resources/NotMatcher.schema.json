@@ -4,6 +4,7 @@
   "properties" : {
     "matcher" : {
       "type" : "object",
+      "id" : "urn:jsonschema:rmistry:schema:test:Matcher",
       "required" : true,
       "oneOf" : [ {
         "$ref" : "urn:jsonschema:rmistry:schema:test:LongMatcher"
@@ -21,6 +22,7 @@
   "definitions" : {
     "urn:jsonschema:rmistry:schema:test:Matcher" : {
       "type" : "object",
+      "id" : "urn:jsonschema:rmistry:schema:test:Matcher",
       "required" : true,
       "oneOf" : [ {
         "$ref" : "urn:jsonschema:rmistry:schema:test:LongMatcher"

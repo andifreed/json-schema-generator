@@ -4,13 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.module.jsonSchema.JsonSchema;
 import org.apache.commons.io.IOUtils;
 import org.junit.Test;
-import rmistry.schema.test.AddActivityAppAction;
-import rmistry.schema.test.AddNoteAppAction;
-import rmistry.schema.test.AssignTo;
-import rmistry.schema.test.Matcher;
-import rmistry.schema.test.NotMatcher;
-import rmistry.schema.test.Root;
-import rmistry.schema.test.SimpleRoot;
+import rmistry.schema.test.*;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -23,6 +17,11 @@ public class SchemaGeneratorTest {
   @Test
   public void testSimple() throws IOException {
     doAClass(SimpleRoot.class);
+  }
+
+  @Test
+  public void testSimplePropertySubclass() throws IOException {
+    doAClass(SimpleSubClassRoot.class);
   }
 
   @Test

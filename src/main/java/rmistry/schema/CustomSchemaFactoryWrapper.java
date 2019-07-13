@@ -180,6 +180,7 @@ class CustomSchemaFactoryWrapper extends SchemaFactoryWrapper {
           return propertySchema(prop); // if schema for class already generated exit
         }
         ObjectSchema propSchema = new ObjectSchema();
+        propSchema.setId(refId);
         // we are generating the class so flag it as built for recursion
         schemaFactory.globalDefinitionClasses.put(refId, propSchema);
         Set<Object> inheritingClasses = new TreeSet<>(Comparator.comparing((el) -> ((ReferenceSchema)el).get$ref()));
@@ -204,7 +205,6 @@ class CustomSchemaFactoryWrapper extends SchemaFactoryWrapper {
         if (inheritingClasses.size() > 0) {
           propSchema.setOneOf(inheritingClasses);
         } else {
-          propSchema.set$ref(refId);
           SchemaFactoryWrapper visitor = getNewWrapper(schemaFactory);
           try {
             JsonSchema subClassSchema = GenerateSchemas.generateSchemaFromJavaClass(visitor, rawClass);

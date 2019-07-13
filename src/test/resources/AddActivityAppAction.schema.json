@@ -11,6 +11,7 @@
     },
     "assignTo" : {
       "type" : "object",
+      "id" : "urn:jsonschema:rmistry:schema:test:AssignTo",
       "required" : true,
       "oneOf" : [ {
         "$ref" : "urn:jsonschema:rmistry:schema:test:AssignToDefault"
@@ -40,6 +41,7 @@
   "definitions" : {
     "urn:jsonschema:rmistry:schema:test:AssignTo" : {
       "type" : "object",
+      "id" : "urn:jsonschema:rmistry:schema:test:AssignTo",
       "required" : true,
       "oneOf" : [ {
         "$ref" : "urn:jsonschema:rmistry:schema:test:AssignToDefault"
