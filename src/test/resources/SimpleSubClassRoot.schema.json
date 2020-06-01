@@ -1,150 +1,150 @@
 {
-  "type" : "object",
-  "id" : "urn:jsonschema:rmistry:schema:test:SimpleSubClassRoot",
-  "properties" : {
-    "action" : {
-      "type" : "object",
-      "id" : "urn:jsonschema:rmistry:schema:test:AppAction",
-      "required" : true,
-      "oneOf" : [ {
-        "$ref" : "urn:jsonschema:rmistry:schema:test:AddActivityAppAction"
+  "type": "object",
+  "id": "urn:jsonschema:test:data:test1:SimpleSubClassRoot",
+  "properties": {
+    "action": {
+      "type": "object",
+      "id": "urn:jsonschema:test:data:test1:AppAction",
+      "required": true,
+      "oneOf": [ {
+        "$ref": "urn:jsonschema:test:data:test1:AddActivityAppAction"
       }, {
-        "$ref" : "urn:jsonschema:rmistry:schema:test:AddNoteAppAction"
+        "$ref": "urn:jsonschema:test:data:test1:AddNoteAppAction"
       }, {
-        "$ref" : "urn:jsonschema:rmistry:schema:test:AppAction"
+        "$ref": "urn:jsonschema:test:data:test1:AppAction"
       } ]
     }
   },
-  "definitions" : {
-    "urn:jsonschema:rmistry:schema:test:AppAction" : {
-      "type" : "object",
-      "id" : "urn:jsonschema:rmistry:schema:test:AppAction",
-      "required" : true,
-      "oneOf" : [ {
-        "$ref" : "urn:jsonschema:rmistry:schema:test:AddActivityAppAction"
+  "definitions": {
+    "urn:jsonschema:test:data:test1:AppAction": {
+      "type": "object",
+      "id": "urn:jsonschema:test:data:test1:AppAction",
+      "required": true,
+      "oneOf": [ {
+        "$ref": "urn:jsonschema:test:data:test1:AddActivityAppAction"
       }, {
-        "$ref" : "urn:jsonschema:rmistry:schema:test:AddNoteAppAction"
+        "$ref": "urn:jsonschema:test:data:test1:AddNoteAppAction"
       }, {
-        "$ref" : "urn:jsonschema:rmistry:schema:test:AppAction"
+        "$ref": "urn:jsonschema:test:data:test1:AppAction"
       } ]
     },
-    "urn:jsonschema:rmistry:schema:test:AssignTo" : {
-      "type" : "object",
-      "id" : "urn:jsonschema:rmistry:schema:test:AssignTo",
-      "required" : true,
-      "oneOf" : [ {
-        "$ref" : "urn:jsonschema:rmistry:schema:test:AssignToDefault"
+    "urn:jsonschema:test:data:test1:AssignTo": {
+      "type": "object",
+      "id": "urn:jsonschema:test:data:test1:AssignTo",
+      "required": true,
+      "oneOf": [ {
+        "$ref": "urn:jsonschema:test:data:test1:AssignToDefault"
       }, {
-        "$ref" : "urn:jsonschema:rmistry:schema:test:AssignToGroup"
+        "$ref": "urn:jsonschema:test:data:test1:AssignToGroup"
       } ]
     },
-    "urn:jsonschema:rmistry:schema:test:AssignToDefault" : {
-      "type" : "object",
-      "id" : "urn:jsonschema:rmistry:schema:test:AssignToDefault",
-      "additionalProperties" : false,
-      "properties" : {
-        "properties" : {
-          "type" : "object",
-          "additionalProperties" : {
-            "type" : "string"
+    "urn:jsonschema:test:data:test1:AssignToDefault": {
+      "type": "object",
+      "id": "urn:jsonschema:test:data:test1:AssignToDefault",
+      "additionalProperties": false,
+      "properties": {
+        "properties": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
           }
         },
-        "target" : {
-          "type" : "string",
-          "required" : true
+        "target": {
+          "type": "string",
+          "required": true
         }
       }
     },
-    "urn:jsonschema:rmistry:schema:test:AssignToGroup" : {
-      "type" : "object",
-      "id" : "urn:jsonschema:rmistry:schema:test:AssignToGroup",
-      "additionalProperties" : false,
-      "properties" : {
-        "groupName" : {
-          "type" : "string",
-          "required" : true
+    "urn:jsonschema:test:data:test1:AssignToGroup": {
+      "type": "object",
+      "id": "urn:jsonschema:test:data:test1:AssignToGroup",
+      "additionalProperties": false,
+      "properties": {
+        "groupName": {
+          "type": "string",
+          "required": true
         },
-        "target" : {
-          "type" : "string",
-          "required" : true
+        "target": {
+          "type": "string",
+          "required": true
         }
       }
     },
-    "urn:jsonschema:rmistry:schema:test:AddActivityAppAction" : {
-      "type" : "object",
-      "id" : "urn:jsonschema:rmistry:schema:test:AddActivityAppAction",
-      "additionalProperties" : false,
-      "properties" : {
-        "action" : {
-          "type" : "string",
-          "required" : true
+    "urn:jsonschema:test:data:test1:AddActivityAppAction": {
+      "type": "object",
+      "id": "urn:jsonschema:test:data:test1:AddActivityAppAction",
+      "additionalProperties": false,
+      "properties": {
+        "action": {
+          "type": "string",
+          "required": true
         },
-        "addToParent" : {
-          "type" : "boolean"
+        "addToParent": {
+          "type": "boolean"
         },
-        "assignTo" : {
-          "type" : "object",
-          "id" : "urn:jsonschema:rmistry:schema:test:AssignTo",
-          "required" : true,
-          "oneOf" : [ {
-            "$ref" : "urn:jsonschema:rmistry:schema:test:AssignToDefault"
+        "assignTo": {
+          "type": "object",
+          "id": "urn:jsonschema:test:data:test1:AssignTo",
+          "required": true,
+          "oneOf": [ {
+            "$ref": "urn:jsonschema:test:data:test1:AssignToDefault"
           }, {
-            "$ref" : "urn:jsonschema:rmistry:schema:test:AssignToGroup"
+            "$ref": "urn:jsonschema:test:data:test1:AssignToGroup"
           } ]
         },
-        "description" : {
-          "type" : "string",
-          "required" : true
+        "description": {
+          "type": "string",
+          "required": true
         },
-        "pattern" : {
-          "type" : "string",
-          "required" : true
+        "pattern": {
+          "type": "string",
+          "required": true
         },
-        "properties" : {
-          "type" : "object",
-          "additionalProperties" : {
-            "type" : "string"
+        "properties": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
           }
         },
-        "subject" : {
-          "type" : "string",
-          "required" : true
+        "subject": {
+          "type": "string",
+          "required": true
         }
       }
     },
-    "urn:jsonschema:rmistry:schema:test:AddNoteAppAction" : {
-      "type" : "object",
-      "id" : "urn:jsonschema:rmistry:schema:test:AddNoteAppAction",
-      "additionalProperties" : false,
-      "properties" : {
-        "action" : {
-          "type" : "string",
-          "required" : true
+    "urn:jsonschema:test:data:test1:AddNoteAppAction": {
+      "type": "object",
+      "id": "urn:jsonschema:test:data:test1:AddNoteAppAction",
+      "additionalProperties": false,
+      "properties": {
+        "action": {
+          "type": "string",
+          "required": true
         },
-        "addToParent" : {
-          "type" : "boolean"
+        "addToParent": {
+          "type": "boolean"
         },
-        "markConfidential" : {
-          "type" : "boolean",
-          "required" : true
+        "markConfidential": {
+          "type": "boolean",
+          "required": true
         },
-        "properties" : {
-          "type" : "object",
-          "additionalProperties" : {
-            "type" : "string"
+        "properties": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
           }
         },
-        "securityType" : {
-          "type" : "string",
-          "required" : true
+        "securityType": {
+          "type": "string",
+          "required": true
         },
-        "subject" : {
-          "type" : "string",
-          "required" : true
+        "subject": {
+          "type": "string",
+          "required": true
         },
-        "topic" : {
-          "type" : "string",
-          "required" : true
+        "topic": {
+          "type": "string",
+          "required": true
         }
       }
     }

@@ -1,50 +1,50 @@
 {
-  "type" : "object",
-  "id" : "urn:jsonschema:rmistry:schema:test:SimpleRoot",
-  "properties" : {
-    "notes" : {
-      "type" : "array",
-      "required" : true,
-      "items" : {
-        "type" : "object",
-        "id" : "urn:jsonschema:rmistry:schema:test:AddNoteAppAction",
-        "properties" : {
-          "action" : {
-            "type" : "string",
-            "required" : true
+  "type": "object",
+  "id": "urn:jsonschema:test:data:test1:SimpleRoot",
+  "properties": {
+    "notes": {
+      "type": "array",
+      "required": true,
+      "items": {
+        "type": "object",
+        "id": "urn:jsonschema:test:data:test1:AddNoteAppAction",
+        "properties": {
+          "action": {
+            "type": "string",
+            "required": true
           },
-          "addToParent" : {
-            "type" : "boolean"
+          "addToParent": {
+            "type": "boolean"
           },
-          "markConfidential" : {
-            "type" : "boolean",
-            "required" : true
+          "markConfidential": {
+            "type": "boolean",
+            "required": true
           },
-          "properties" : {
-            "type" : "object",
-            "additionalProperties" : {
-              "type" : "string"
+          "properties": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
             }
           },
-          "securityType" : {
-            "type" : "string",
-            "required" : true
+          "securityType": {
+            "type": "string",
+            "required": true
           },
-          "subject" : {
-            "type" : "string",
-            "required" : true
+          "subject": {
+            "type": "string",
+            "required": true
           },
-          "topic" : {
-            "type" : "string",
-            "required" : true
+          "topic": {
+            "type": "string",
+            "required": true
           }
         }
       }
     },
-    "properties" : {
-      "type" : "object",
-      "additionalProperties" : {
-        "type" : "string"
+    "properties": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string"
       }
     }
   }

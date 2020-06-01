@@ -1,0 +1,320 @@
+{
+  "type": "object",
+  "id": "test.data.test2.ConfigEx",
+  "description": "This is an external representation of the config object.\n  This accepts suppliers for what the objects that the configuration needs.\n  The config object can be initialized via ConfigEx.parse()",
+  "properties": {
+    "additionalInterceptors": {
+      "type": "array",
+      "description": "This is a collection of additional interceptors, authentication, tracing will be added as interceptors.",
+      "items": {
+        "type": "object",
+        "id": "test.data.test2.InterceptorSetupEx",
+        "properties": {
+          "interceptorSupplierClass": {
+            "type": "string",
+            "$ref": "java.lang.Class",
+            "required": true,
+            "description": "This is the supplier class, it will be passed the properties to get a RequestInterceptor implementation"
+          },
+          "properties": {
+            "type": "object",
+            "description": "This is a map of name/value that will be passed to the supplier",
+            "additionalProperties": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "auth": {
+      "type": "object",
+      "id": "test.data.test2.AuthMethodEx",
+      "required": false,
+      "description": "This is how to authenticate: 'HttpBasic', 'HttpBearer', 'ApiKey', or 'OAuth' are supported, each has specific attributes based on their 'method' property.",
+      "oneOf": [ {
+        "$ref": "test.data.test2.ApiKeyAuthEx"
+      }, {
+        "$ref": "test.data.test2.HttpBasicAuthEx"
+      }, {
+        "$ref": "test.data.test2.HttpBearerAuthEx"
+      }, {
+        "$ref": "test.data.test2.OAuthEx"
+      } ]
+    },
+    "basePath": {
+      "type": "string",
+      "description": "This is the base path to the endpoint."
+    },
+    "eventHandlers": {
+      "type": "array",
+      "description": "This is the event handlers that should be applied to each request, RetrySetupEx, FallbackSetupEx, CircuitBreakerEx.",
+      "items": {
+        "type": "object",
+        "id": "test.data.test2.EventHandlerSetupEx",
+        "properties": {
+          "type": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "loggerName": {
+      "type": "string",
+      "description": "This to override the logger for this end point, i.e., you may want to log different end points to different loggers."
+    },
+    "mapperSupplierClass": {
+      "type": "string",
+      "$ref": "java.lang.Class",
+      "description": "This is an ObjectMapper, but default the standard mapper is used."
+    },
+    "ssl": {
+      "type": "object",
+      "id": "test.data.test2.SSLSetupEx",
+      "required": false,
+      "description": "This is setup information for ssl or tls."
+    },
+    "timeout": {
+      "type": "object",
+      "id": "test.data.test2.TimeoutSetupEx",
+      "required": false,
+      "description": "This is timeout information."
+    },
+    "traceActionsClass": {
+      "type": "string",
+      "$ref": "java.lang.Class",
+      "description": "This is whether to deal with trace headers, but default the standards headers are forwarded."
+    }
+  },
+  "definitions": {
+    "test.data.test2.AuthMethodEx": {
+      "type": "object",
+      "id": "test.data.test2.AuthMethodEx",
+      "required": false,
+      "description": "This is how to authenticate: 'HttpBasic', 'HttpBearer', 'ApiKey', or 'OAuth' are supported, each has specific attributes based on their 'method' property.",
+      "oneOf": [ {
+        "$ref": "test.data.test2.ApiKeyAuthEx"
+      }, {
+        "$ref": "test.data.test2.HttpBasicAuthEx"
+      }, {
+        "$ref": "test.data.test2.HttpBearerAuthEx"
+      }, {
+        "$ref": "test.data.test2.OAuthEx"
+      } ]
+    },
+    "test.data.test2.ApiKeyAuthEx": {
+      "type": "object",
+      "id": "test.data.test2.ApiKeyAuthEx",
+      "additionalProperties": false,
+      "properties": {
+        "apiKey": {
+          "type": "string",
+          "description": "this is value of the parameter.  Note that if credential supplier defined, this value will be requests from it."
+        },
+        "credentialSupplierSupplierClass": {
+          "type": "string",
+          "$ref": "java.lang.Class",
+          "description": "this is a class that implements Credential supplier.  The supplier can be initialized the with properties below, and will be asked for the value of the paramName, i.e., if paramName is defaulted it will be 'apikey', so the supplier will be asked for 'apikey' value."
+        },
+        "location": {
+          "type": "string",
+          "description": "this is where this key belongs: header, parameter, cookie.  Defaults to header",
+          "enum": [ "query", "header", "cookie" ]
+        },
+        "method": {
+          "type": "string",
+          "description": "this is required to be 'ApiKey', for ApiKeyAuthEx"
+        },
+        "paramName": {
+          "type": "string",
+          "description": "this is where the name of the header, parameter or cookie. Default is apikey"
+        },
+        "properties": {
+          "type": "object",
+          "description": "this is a map of name/values which will be passed to the CredentialSupplierSupplier to to get a CredentialSupplier.",
+          "additionalProperties": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "test.data.test2.HttpBasicAuthEx": {
+      "type": "object",
+      "id": "test.data.test2.HttpBasicAuthEx",
+      "additionalProperties": false,
+      "properties": {
+        "credentialSupplierSupplierClass": {
+          "type": "string",
+          "$ref": "java.lang.Class",
+          "description": "this is a class that implements Credential supplier.  The supplier can be initialized the with properties below, and will be asked for the value of the username and password"
+        },
+        "method": {
+          "type": "string",
+          "required": true,
+          "description": "this is must be 'HttpBasic' to setup a HttpAuthentication"
+        },
+        "password": {
+          "type": "string",
+          "description": "This is the password, it can also be supplied by the credential supplier"
+        },
+        "properties": {
+          "type": "object",
+          "description": "this is a map of name/values which will be passed to the CredentialSupplierSupplier to to get a CredentialSupplier.",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "username": {
+          "type": "string",
+          "description": "This is the username, it can also be supplied by the credential supplier"
+        }
+      }
+    },
+    "test.data.test2.HttpBearerAuthEx": {
+      "type": "object",
+      "id": "test.data.test2.HttpBearerAuthEx",
+      "additionalProperties": false,
+      "properties": {
+        "bearerToken": {
+          "type": "string",
+          "description": "This is the token value.  It can also be supplied by the credential supplier."
+        },
+        "credentialSupplierSupplierClass": {
+          "type": "string",
+          "$ref": "java.lang.Class",
+          "description": "this is a class that implements Credential supplier.  The supplier can be initialized the with properties below, and will be asked for the value of the scheme, i.e., if scheme is defaulted it will be 'bearerToken', so the supplier will be asked for 'bearerToken' value."
+        },
+        "method": {
+          "type": "string",
+          "required": true,
+          "description": "this is must be 'HttpBearer' to setup a HttpBearerAuth"
+        },
+        "properties": {
+          "type": "object",
+          "description": "this is a map of name/values which will be passed to the CredentialSupplierSupplier to to get a CredentialSupplier.",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "scheme": {
+          "type": "string",
+          "description": "This is the authorization scheme, by default 'Bearer'"
+        }
+      }
+    },
+    "test.data.test2.CredentialsEx": {
+      "type": "object",
+      "id": "test.data.test2.CredentialsEx",
+      "properties": {
+        "clientId": {
+          "type": "string",
+          "description": "this is the client id, this can also be supplied by the credential supplier configured with oath"
+        },
+        "clientSecret": {
+          "type": "string",
+          "description": "this is the client secret, this can also be supplied by the credential supplier configured with oath"
+        },
+        "password": {
+          "type": "string",
+          "description": "this is the password, this can also be supplied by the credential supplier configured with oath"
+        },
+        "username": {
+          "type": "string",
+          "description": "this is the username, this can also be supplied by the credential supplier configured with oath"
+        }
+      }
+    },
+    "test.data.test2.OAuthEx": {
+      "type": "object",
+      "id": "test.data.test2.OAuthEx",
+      "additionalProperties": false,
+      "properties": {
+        "authorizationUrl": {
+          "type": "string",
+          "description": "this is the url for authorization"
+        },
+        "credentialSupplierSupplierClass": {
+          "type": "string",
+          "$ref": "java.lang.Class",
+          "description": "this is a class that implements Credential supplier.  The supplier can be initialized the with properties below, and will be asked for the value of the different properties, i.e., username, password, clientSecret, clientId."
+        },
+        "credentials": {
+          "type": "object",
+          "id": "test.data.test2.CredentialsEx",
+          "required": false,
+          "description": "this is the Credentials, these values can also be provided by the CredentialProvider"
+        },
+        "flow": {
+          "type": "string",
+          "description": "this is how to implement: values are 'accessCode', 'implicit', 'password', 'application'."
+        },
+        "method": {
+          "type": "string",
+          "required": true,
+          "description": "this is must be 'OAuth' to configure OAuth authentication"
+        },
+        "properties": {
+          "type": "object",
+          "description": "this is a map of name/values which will be passed to the CredentialSupplierSupplier to to get a CredentialSupplier.",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "redirectUrl": {
+          "type": "string"
+        },
+        "scopes": {
+          "type": "string",
+          "description": "this is the authorization scopes requested"
+        },
+        "tokenStoreClass": {
+          "type": "string",
+          "$ref": "java.lang.Class",
+          "description": "this is store for the transient token, normally it is just kept in the configuration, but you can supply a class to externalize it. This class can also implement AccessTokenListener, and the entire token will be received"
+        },
+        "tokenUrl": {
+          "type": "string",
+          "description": "this is the url for token"
+        }
+      }
+    },
+    "test.data.test2.SSLSetupEx": {
+      "type": "object",
+      "id": "test.data.test2.SSLSetupEx",
+      "properties": {
+        "factorySupplierClass": {
+          "type": "string",
+          "$ref": "java.lang.Class",
+          "required": true,
+          "description": "this is a function class that accepts a Map<String,String> and returns an object that implements SSLSocketFactory"
+        },
+        "hostnameVerifierSupplierClass": {
+          "type": "string",
+          "$ref": "java.lang.Class",
+          "required": true,
+          "description": "this is a function class that accepts a Map<String,String> and returns an object that implements HostnameVerifier"
+        },
+        "properties": {
+          "type": "object",
+          "description": "this is the map passed to the functions",
+          "additionalProperties": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "test.data.test2.TimeoutSetupEx": {
+      "type": "object",
+      "id": "test.data.test2.TimeoutSetupEx",
+      "properties": {
+        "connectTimeoutMillis": {
+          "type": "integer",
+          "required": true
+        },
+        "readTimeoutMillis": {
+          "type": "integer",
+          "required": true
+        }
+      }
+    }
+  }
+}

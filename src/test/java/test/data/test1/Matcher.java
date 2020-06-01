@@ -1,4 +1,4 @@
-package rmistry.schema.test;
+package test.data.test1;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
