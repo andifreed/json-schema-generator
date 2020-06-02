@@ -3,8 +3,6 @@ package test.data.test2;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
-import java.time.Duration;
-
 @SuppressWarnings("unused")
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, visible = true, include = JsonTypeInfo.As.EXISTING_PROPERTY, property = "type")
 @JsonSubTypes({
@@ -14,7 +12,7 @@ import java.time.Duration;
 public interface BackoffEx {
   String getType();
 
-  Duration getInterval();
+  Double getIntervalSecs();
 
   Double getMultiplier();
 }

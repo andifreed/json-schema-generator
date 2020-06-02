@@ -8,7 +8,6 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 
-import java.time.Duration;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -29,7 +28,7 @@ public class CircuitBreakerSetupEx implements EventHandlerSetupEx {
   @JsonPropertyDescription("This is the percentage (n/100) failure threshold, default 50")
   private final Float slowCallRateThreshold;
   @JsonPropertyDescription("Wait duration, decimal seconds, .5 would be 500 mill seconds, default 60")
-  private final Duration slowCallDurationThreshold;
+  private final Double slowCallDurationThresholdSec;
   @JsonPropertyDescription("Minimum number of calls, no action before this, default 100")
   private final Integer minimumNumberOfCalls;
   @JsonPropertyDescription("Permitted number of calls in half open, default 10")

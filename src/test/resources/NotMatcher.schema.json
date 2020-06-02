@@ -62,14 +62,8 @@
       "properties": {
         "matcher": {
           "type": "object",
-          "id": "urn:jsonschema:test:data:test1:Matcher",
-          "required": true,
-          "properties": {
-            "type": {
-              "type": "string",
-              "required": true
-            }
-          }
+          "$ref": "urn:jsonschema:test:data:test1:Matcher",
+          "required": true
         },
         "type": {
           "type": "string",
@@ -87,13 +81,7 @@
           "required": true,
           "items": {
             "type": "object",
-            "id": "urn:jsonschema:test:data:test1:Matcher",
-            "properties": {
-              "type": {
-                "type": "string",
-                "required": true
-              }
-            }
+            "$ref": "urn:jsonschema:test:data:test1:Matcher"
           }
         },
         "type": {
