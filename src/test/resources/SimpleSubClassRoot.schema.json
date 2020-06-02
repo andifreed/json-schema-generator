@@ -28,48 +28,6 @@
         "$ref": "urn:jsonschema:test:data:test1:AppAction"
       } ]
     },
-    "urn:jsonschema:test:data:test1:AssignTo": {
-      "type": "object",
-      "id": "urn:jsonschema:test:data:test1:AssignTo",
-      "required": true,
-      "oneOf": [ {
-        "$ref": "urn:jsonschema:test:data:test1:AssignToDefault"
-      }, {
-        "$ref": "urn:jsonschema:test:data:test1:AssignToGroup"
-      } ]
-    },
-    "urn:jsonschema:test:data:test1:AssignToDefault": {
-      "type": "object",
-      "id": "urn:jsonschema:test:data:test1:AssignToDefault",
-      "additionalProperties": false,
-      "properties": {
-        "properties": {
-          "type": "object",
-          "additionalProperties": {
-            "type": "string"
-          }
-        },
-        "target": {
-          "type": "string",
-          "required": true
-        }
-      }
-    },
-    "urn:jsonschema:test:data:test1:AssignToGroup": {
-      "type": "object",
-      "id": "urn:jsonschema:test:data:test1:AssignToGroup",
-      "additionalProperties": false,
-      "properties": {
-        "groupName": {
-          "type": "string",
-          "required": true
-        },
-        "target": {
-          "type": "string",
-          "required": true
-        }
-      }
-    },
     "urn:jsonschema:test:data:test1:AddActivityAppAction": {
       "type": "object",
       "id": "urn:jsonschema:test:data:test1:AddActivityAppAction",
@@ -107,6 +65,48 @@
           }
         },
         "subject": {
+          "type": "string",
+          "required": true
+        }
+      }
+    },
+    "urn:jsonschema:test:data:test1:AssignTo": {
+      "type": "object",
+      "id": "urn:jsonschema:test:data:test1:AssignTo",
+      "required": true,
+      "oneOf": [ {
+        "$ref": "urn:jsonschema:test:data:test1:AssignToDefault"
+      }, {
+        "$ref": "urn:jsonschema:test:data:test1:AssignToGroup"
+      } ]
+    },
+    "urn:jsonschema:test:data:test1:AssignToDefault": {
+      "type": "object",
+      "id": "urn:jsonschema:test:data:test1:AssignToDefault",
+      "additionalProperties": false,
+      "properties": {
+        "properties": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "target": {
+          "type": "string",
+          "required": true
+        }
+      }
+    },
+    "urn:jsonschema:test:data:test1:AssignToGroup": {
+      "type": "object",
+      "id": "urn:jsonschema:test:data:test1:AssignToGroup",
+      "additionalProperties": false,
+      "properties": {
+        "groupName": {
+          "type": "string",
+          "required": true
+        },
+        "target": {
           "type": "string",
           "required": true
         }
