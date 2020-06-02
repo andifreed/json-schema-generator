@@ -1,4 +1,4 @@
-package rmistry.schema.test;
+package test.data.test1;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
@@ -20,6 +20,7 @@ public class AppAction {
   private final String _action;
   private final Map<String, String> _properties;
   
+  @SuppressWarnings("rawtypes")
   AppAction(Builder builder) {
     _action = builder._action;
     //noinspection unchecked

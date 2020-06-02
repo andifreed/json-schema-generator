@@ -30,8 +30,10 @@ SOFTWARE.
 
 package rmistry.schema;
 
+import com.fasterxml.jackson.annotation.JsonClassDescription;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.databind.BeanProperty;
@@ -49,6 +51,7 @@ import com.fasterxml.jackson.module.jsonSchema.factories.WrapperFactory;
 import com.fasterxml.jackson.module.jsonSchema.types.AnySchema;
 import com.fasterxml.jackson.module.jsonSchema.types.ObjectSchema;
 import com.fasterxml.jackson.module.jsonSchema.types.ReferenceSchema;
+import com.fasterxml.jackson.module.jsonSchema.types.StringSchema;
 
 import java.lang.annotation.Annotation;
 import java.util.Collection;
@@ -60,10 +63,12 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 
 /**
- *
  * @author rmistry
  */
 class CustomSchemaFactoryWrapper extends SchemaFactoryWrapper {
+
+  private static final Comparator<Object> COMPARATOR = Comparator.comparing(o -> ((ReferenceSchema) o).get$ref());
+
   CustomSchemaFactoryWrapper() {
     this(null);
   }
@@ -77,21 +82,22 @@ class CustomSchemaFactoryWrapper extends SchemaFactoryWrapper {
 
   Map<String, JsonSchema> globalDefinitionClasses;
 
-  class CustomObjectSchema extends ObjectSchema {
+  static class CustomObjectSchema extends ObjectSchema {
     @JsonProperty
     Map<String, JsonSchema> definitions;
   }
 
-  class CustomAnySchema extends AnySchema {
+  static class CustomAnySchema extends AnySchema {
     @JsonProperty
     Map<String, JsonSchema> definitions;
   }
 
-  public class CustomJsonSchemaFactory extends JsonSchemaFactory {
+  static public class CustomJsonSchemaFactory extends JsonSchemaFactory {
     @Override
     public AnySchema anySchema() {
       return new CustomAnySchema();
     }
+
     @Override
     public ObjectSchema objectSchema() {
       return new CustomObjectSchema();
@@ -104,8 +110,8 @@ class CustomSchemaFactoryWrapper extends SchemaFactoryWrapper {
     return wrapper;
   }
 
-  public class CustomWrapperFactory extends WrapperFactory {
-    private CustomSchemaFactoryWrapper schemaFactory;
+  public static class CustomWrapperFactory extends WrapperFactory {
+    private final CustomSchemaFactoryWrapper schemaFactory;
 
     CustomWrapperFactory(CustomSchemaFactoryWrapper sf) {
       schemaFactory = sf;
@@ -132,7 +138,7 @@ class CustomSchemaFactoryWrapper extends SchemaFactoryWrapper {
     Map<String, Class<?>> output = new TreeMap<>();
     for (Annotation a : annotations) {
       if (JsonSubTypes.class.isAssignableFrom(a.annotationType())) {
-        for (JsonSubTypes.Type subType : ((JsonSubTypes)a).value()) {
+        for (JsonSubTypes.Type subType : ((JsonSubTypes) a).value()) {
           output.put(subType.value().getSimpleName(), subType.value());
         }
       } else if (JsonTypeInfo.class.isAssignableFrom(a.annotationType())) {
@@ -146,12 +152,13 @@ class CustomSchemaFactoryWrapper extends SchemaFactoryWrapper {
   }
 
   private static String javaTypeToUrn(Class<?> classObj) {
-    return "urn:jsonschema:" + classObj.getCanonicalName().replace('.', ':').replace('$', ':');
+    String name = classObj.getCanonicalName();
+    return "urn:jsonschema:" + name.replace('.', ':').replace('$', ':');
   }
 
   private class CustomObjectVisitor extends ObjectVisitor {
 
-    private CustomSchemaFactoryWrapper schemaFactory;
+    private final CustomSchemaFactoryWrapper schemaFactory;
 
     CustomObjectVisitor(SerializerProvider provider,
                         ObjectSchema schema,
@@ -173,17 +180,26 @@ class CustomSchemaFactoryWrapper extends SchemaFactoryWrapper {
 
     private JsonSchema createOrGetSchema(BeanProperty prop) throws JsonMappingException {
       JavaType type = prop.getType();
-      if (isModel(type)) {
+      if (Class.class.equals(type.getRawClass())) {
+        StringSchema clsSchema = new StringSchema();
+        String id = javaTypeToUrn(Class.class);
+        clsSchema.set$ref(id);
+        addPropDescription(clsSchema, prop);
+        return clsSchema; // if schema for class already generated exit
+      }
+      else if (isModel(type)) {
         Class<?> rawClass = type.getRawClass();
-        String refId = CustomSchemaFactoryWrapper.javaTypeToUrn(rawClass);
+        String refId = javaTypeToUrn(rawClass);
         if (schemaFactory.globalDefinitionClasses.containsKey(refId)) {
-          return propertySchema(prop); // if schema for class already generated exit
+          JsonSchema schema = propertySchema(prop);
+          addPropDescription(schema, prop);
+          return schema; // if schema for class already generated exit
         }
         ObjectSchema propSchema = new ObjectSchema();
         propSchema.setId(refId);
         // we are generating the class so flag it as built for recursion
         schemaFactory.globalDefinitionClasses.put(refId, propSchema);
-        Set<Object> inheritingClasses = new TreeSet<>(Comparator.comparing((el) -> ((ReferenceSchema)el).get$ref()));
+        Set<Object> inheritingClasses = new TreeSet<>(COMPARATOR);
         for (Class<?> subClass : getAllJsonSubTypeClasses(rawClass)) {
           String subClassRef = javaTypeToUrn(subClass);
           inheritingClasses.add(new ReferenceSchema(subClassRef));
@@ -191,12 +207,12 @@ class CustomSchemaFactoryWrapper extends SchemaFactoryWrapper {
             SchemaFactoryWrapper visitor = getNewWrapper(schemaFactory);
             try {
               JsonSchema subClassSchema = GenerateSchemas.generateSchemaFromJavaClass(visitor, subClass);
+              addClassDescription(subClassSchema, subClass);
               if (subClassSchema instanceof ObjectSchema) {
                 ((ObjectSchema) subClassSchema).rejectAdditionalProperties();
               }
               schemaFactory.globalDefinitionClasses.put(subClassRef, subClassSchema);
             } catch (Exception ex) {
-              ex.printStackTrace();
               throw JsonMappingException.from(visitor.getProvider(), "Exception occurred", ex);
             }
           }
@@ -219,34 +235,51 @@ class CustomSchemaFactoryWrapper extends SchemaFactoryWrapper {
         }
 
         propSchema.setRequired(rawClass.isAnnotationPresent(JsonInclude.class));
+        addPropDescription(propSchema, prop);
         return propSchema;
       }
-      return propertySchema(prop);
+      JsonSchema propSchema = propertySchema(prop);
+      addPropDescription(propSchema, prop);
+      return propSchema;
     }
 
   }
 
+  private void addPropDescription(JsonSchema schema, BeanProperty property) {
+    JsonPropertyDescription annotation = property.getAnnotation(JsonPropertyDescription.class);
+    if (annotation != null) {
+      schema.setDescription(annotation.value());
+    }
+  }
+
+  public static void addClassDescription(JsonSchema schema, Class<?> cls) {
+    JsonClassDescription annotation = cls.getAnnotation(JsonClassDescription.class);
+    if (annotation != null) {
+      schema.setDescription(annotation.value());
+    }
+  }
+
   private static boolean isModel(JavaType type) {
     return type.getRawClass() != String.class
-      && !isBoxedPrimitive(type.getRawClass())
-      && !type.isPrimitive()
-      && !type.isMapLikeType()
-      && !type.isCollectionLikeType()
-      && !type.isEnumType();
+        && !isBoxedPrimitive(type.getRawClass())
+        && !type.isPrimitive()
+        && !type.isMapLikeType()
+        && !type.isCollectionLikeType()
+        && !type.isEnumType();
   }
 
   private static boolean isBoxedPrimitive(Class<?> type) {
     return type == Boolean.class
-      || type == Byte.class
-      || type == Long.class
-      || type == Integer.class
-      || type == Short.class
-      || type == Float.class
-      || type == Double.class;
+        || type == Byte.class
+        || type == Long.class
+        || type == Integer.class
+        || type == Short.class
+        || type == Float.class
+        || type == Double.class;
   }
 
   public class CustomFormatVisitorFactory extends FormatVisitorFactory {
-    private CustomSchemaFactoryWrapper schemaFactory;
+    private final CustomSchemaFactoryWrapper schemaFactory;
 
     CustomFormatVisitorFactory(CustomSchemaFactoryWrapper schemaFactoryWrapper) {
       super(new CustomWrapperFactory(schemaFactoryWrapper));
@@ -256,9 +289,9 @@ class CustomSchemaFactoryWrapper extends SchemaFactoryWrapper {
     @Override
     public JsonObjectFormatVisitor objectFormatVisitor(SerializerProvider provider, ObjectSchema objectSchema, VisitorContext rvc) {
       CustomObjectVisitor v = new CustomObjectVisitor(provider,
-        objectSchema,
-        new CustomWrapperFactory(schemaFactory),
-        schemaFactory);
+          objectSchema,
+          new CustomWrapperFactory(schemaFactory),
+          schemaFactory);
       v.setVisitorContext(rvc);
       return v;
     }

@@ -1,22 +1,35 @@
 package rmistry.schema;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.module.jsonSchema.JsonSchema;
-import org.apache.commons.io.IOUtils;
+import org.assertj.core.api.JUnitSoftAssertions;
+import org.junit.Rule;
 import org.junit.Test;
-import rmistry.schema.test.*;
+import test.data.test1.AddActivityAppAction;
+import test.data.test1.AssignTo;
+import test.data.test1.Matcher;
+import test.data.test1.NotMatcher;
+import test.data.test1.SimpleRoot;
+import test.data.test1.SimpleSubClassRoot;
+import test.data.test2.ConfigEx;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.nio.charset.Charset;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 public class SchemaGeneratorTest {
 
+  @Rule
+  public final JUnitSoftAssertions softly = new JUnitSoftAssertions();
+
   @Test
   public void testSimple() throws IOException {
-    doAClass(SimpleRoot.class);
+    String content = doAClass(SimpleRoot.class);
+    softly.assertThat(content).contains("urn:jsonschema:test:data:test1:AddNoteAppAction");
+    softly.assertThat(content).doesNotContain("test.data.test1.AddNoteAppAction");
+  }
+
+  @Test
+  public void testClassName() throws IOException {
+    String content = GenerateSchemas.genJsonForAClass(SimpleRoot.class, true, null, true, null);
+    softly.assertThat(content).doesNotContain("urn:jsonschema:test:data:test1:AddNoteAppAction");
+    softly.assertThat(content).contains("test.data.test1.AddNoteAppAction");
   }
 
   @Test
@@ -26,7 +39,10 @@ public class SchemaGeneratorTest {
 
   @Test
   public void testComplex() throws IOException {
-    doAClass(Root.class);
+    String content = GenerateSchemas.genJsonForAClass(ConfigEx.class, true, this.getClass().getClassLoader(), true,
+        () -> softly.fail("The schema has changed\n" +
+            "Replaced the content in test/resources for " + ConfigEx.class.getSimpleName() + "\n"));
+    softly.assertThat(content).doesNotContain("urn:jsonschema");
   }
 
   @Test
@@ -49,16 +65,10 @@ public class SchemaGeneratorTest {
     doAClass(Matcher.class);
   }
 
-  private void doAClass(Class<?> classToGenerate) throws IOException {
-    String resName = "/" + classToGenerate.getSimpleName() + ".schema.json";
-    InputStream resource = this.getClass().getResourceAsStream(resName);
-    JsonSchema schema = GenerateSchemas.generateSchemaFromJavaClass(classToGenerate);
-    String content = new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(schema);
-    String expected = resource == null ? "" : IOUtils.toString(resource, "utf-8");
-    assertThat(content)
-      .as("The schema has changed\n" +
-        "Please replace the content in test/resources" + resName + ":\n" +
-        content + "\n")
-      .isEqualToIgnoringNewLines(expected);
+  private String doAClass(Class<?> classToGenerate) throws IOException {
+    return GenerateSchemas.genJsonForAClass(classToGenerate, false, this.getClass().getClassLoader(), true,
+        () -> softly.fail("The schema has changed\n" +
+            "Replaced the content in test/resources for " + classToGenerate.getSimpleName() + "\n"));
   }
+
 }

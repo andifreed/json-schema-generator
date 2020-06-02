@@ -1,4 +1,4 @@
-package rmistry.schema.test;
+package test.data.test1;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
@@ -44,7 +44,7 @@ public class SimpleRoot {
       return this;
     }
 
-    @SuppressWarnings({"unused", "unchecked"})
+    @SuppressWarnings({"unused"})
     public Builder withProperties(Map<String, String> properties) {
       _properties.putAll(properties);
       return this;
