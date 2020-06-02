@@ -119,40 +119,6 @@
     }
   },
   "definitions": {
-    "test.data.test2.InterceptorSetupEx": {
-      "type": "object",
-      "id": "test.data.test2.InterceptorSetupEx",
-      "additionalProperties": false,
-      "properties": {
-        "interceptorSupplierClass": {
-          "type": "string",
-          "$ref": "java.lang.Class",
-          "required": true,
-          "description": "This is the supplier class, it will be passed the properties to get a RequestInterceptor implementation"
-        },
-        "properties": {
-          "type": "object",
-          "description": "This is a map of name/value that will be passed to the supplier",
-          "additionalProperties": {
-            "type": "string"
-          }
-        }
-      }
-    },
-    "test.data.test2.AuthMethodEx": {
-      "type": "object",
-      "id": "test.data.test2.AuthMethodEx",
-      "description": "This is how to authenticate: 'HttpBasic', 'HttpBearer', 'ApiKey', or 'OAuth' are supported, each has specific attributes based on their 'method' property.",
-      "oneOf": [ {
-        "$ref": "test.data.test2.ApiKeyAuthEx"
-      }, {
-        "$ref": "test.data.test2.HttpBasicAuthEx"
-      }, {
-        "$ref": "test.data.test2.HttpBearerAuthEx"
-      }, {
-        "$ref": "test.data.test2.OAuthEx"
-      } ]
-    },
     "test.data.test2.ApiKeyAuthEx": {
       "type": "object",
       "id": "test.data.test2.ApiKeyAuthEx",
@@ -325,41 +291,6 @@
         }
       }
     },
-    "test.data.test2.CredentialsEx": {
-      "type": "object",
-      "id": "test.data.test2.CredentialsEx",
-      "description": "this is the Credentials, these values can also be provided by the CredentialProvider",
-      "additionalProperties": false,
-      "properties": {
-        "clientId": {
-          "type": "string",
-          "description": "this is the client id, this can also be supplied by the credential supplier configured with oath"
-        },
-        "clientSecret": {
-          "type": "string",
-          "description": "this is the client secret, this can also be supplied by the credential supplier configured with oath"
-        },
-        "password": {
-          "type": "string",
-          "description": "this is the password, this can also be supplied by the credential supplier configured with oath"
-        },
-        "username": {
-          "type": "string",
-          "description": "this is the username, this can also be supplied by the credential supplier configured with oath"
-        }
-      }
-    },
-    "test.data.test2.EventHandlerSetupEx": {
-      "type": "object",
-      "id": "test.data.test2.EventHandlerSetupEx",
-      "oneOf": [ {
-        "$ref": "test.data.test2.CircuitBreakerSetupEx"
-      }, {
-        "$ref": "test.data.test2.FallbackSetupEx"
-      }, {
-        "$ref": "test.data.test2.RetrySetupEx"
-      } ]
-    },
     "test.data.test2.CircuitBreakerSetupEx": {
       "type": "object",
       "id": "test.data.test2.CircuitBreakerSetupEx",
@@ -488,15 +419,6 @@
         }
       }
     },
-    "test.data.test2.BackoffEx": {
-      "type": "object",
-      "id": "test.data.test2.BackoffEx",
-      "oneOf": [ {
-        "$ref": "test.data.test2.ConstantExponentialBackoffEx"
-      }, {
-        "$ref": "test.data.test2.RandomExponentialBackoffEx"
-      } ]
-    },
     "test.data.test2.ConstantExponentialBackoffEx": {
       "type": "object",
       "id": "test.data.test2.ConstantExponentialBackoffEx",
@@ -535,49 +457,6 @@
           "type": "string",
           "required": true,
           "description": "This is required to be 'random' for RandomExponentialBackoffEx"
-        }
-      }
-    },
-    "test.data.test2.SSLSetupEx": {
-      "type": "object",
-      "id": "test.data.test2.SSLSetupEx",
-      "description": "This is setup information for ssl or tls.",
-      "additionalProperties": false,
-      "properties": {
-        "factorySupplierClass": {
-          "type": "string",
-          "$ref": "java.lang.Class",
-          "required": true,
-          "description": "this is a function class that accepts a Map<String,String> and returns an object that implements SSLSocketFactory"
-        },
-        "hostnameVerifierSupplierClass": {
-          "type": "string",
-          "$ref": "java.lang.Class",
-          "required": true,
-          "description": "this is a function class that accepts a Map<String,String> and returns an object that implements HostnameVerifier"
-        },
-        "properties": {
-          "type": "object",
-          "description": "this is the map passed to the functions",
-          "additionalProperties": {
-            "type": "string"
-          }
-        }
-      }
-    },
-    "test.data.test2.TimeoutSetupEx": {
-      "type": "object",
-      "id": "test.data.test2.TimeoutSetupEx",
-      "description": "This is timeout information.",
-      "additionalProperties": false,
-      "properties": {
-        "connectTimeoutMillis": {
-          "type": "integer",
-          "required": true
-        },
-        "readTimeoutMillis": {
-          "type": "integer",
-          "required": true
         }
       }
     }

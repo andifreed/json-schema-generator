@@ -49,42 +49,5 @@
       }
     }
   },
-  "definitions": {
-    "urn:jsonschema:test:data:test1:AddNoteAppAction": {
-      "type": "object",
-      "id": "urn:jsonschema:test:data:test1:AddNoteAppAction",
-      "additionalProperties": false,
-      "properties": {
-        "action": {
-          "type": "string",
-          "required": true
-        },
-        "addToParent": {
-          "type": "boolean"
-        },
-        "markConfidential": {
-          "type": "boolean",
-          "required": true
-        },
-        "properties": {
-          "type": "object",
-          "additionalProperties": {
-            "type": "string"
-          }
-        },
-        "securityType": {
-          "type": "string",
-          "required": true
-        },
-        "subject": {
-          "type": "string",
-          "required": true
-        },
-        "topic": {
-          "type": "string",
-          "required": true
-        }
-      }
-    }
-  }
+  "definitions": { }
 }
