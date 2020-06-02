@@ -46,8 +46,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Set;
+import java.util.TreeMap;
+import java.util.stream.Collectors;
 
 import static com.fasterxml.jackson.databind.SerializationFeature.ORDER_MAP_ENTRIES_BY_KEYS;
 import static rmistry.schema.CustomSchemaFactoryWrapper.addClassDescription;
@@ -107,6 +111,14 @@ public class GenerateSchemas {
       wrk = replaceURNWithClass(wrk);
     }
     wrk = replaceTypeAnyWithString("", wrk);
+    Map<String, Map<Boolean, Map<String, JsonNode>>> maps = new TreeMap<>();
+    mapIds("", wrk, maps);
+    Set<String> remove = maps.entrySet().stream()
+        .filter((e) -> e.getValue().get(true) != null && e.getValue().get(true).size() == 2)
+        .filter((e) -> e.getValue().get(false) == null)
+        .map(Map.Entry::getKey)
+        .collect(Collectors.toSet());
+    wrk = replaceDuplicates("", wrk, remove);
     return wrk;
   }
 
@@ -115,7 +127,29 @@ public class GenerateSchemas {
   }
 
   private interface ConsumeArray {
-    void accept(ArrayNode rtn, JsonNode value);
+    void accept(ArrayNode rtn, int i, JsonNode value);
+  }
+
+  private static void mapIds(String path, JsonNode content, Map<String, Map<Boolean, Map<String, JsonNode>>> maps) {
+    if (content.isObject()) {
+      JsonNode id = content.get("id");
+      JsonNode ref = content.get("$ref");
+      if (id != null) {
+        maps.computeIfAbsent(id.textValue(), (v) -> new HashMap<>()).computeIfAbsent(true, (v) -> new HashMap<>()).put(path, content);
+      }
+      if (ref != null) {
+        maps.computeIfAbsent(ref.textValue(), (v) -> new HashMap<>()).computeIfAbsent(false, (v) -> new HashMap<>()).put(path, content);
+      }
+      for (Iterator<Map.Entry<String, JsonNode>> it = content.fields(); it.hasNext(); ) {
+        Map.Entry<String, JsonNode> entry = it.next();
+        mapIds(path + "." + entry.getKey(), entry.getValue(), maps);
+      }
+    } else if (content.isContainerNode()) {
+      int i = 0;
+      for (Iterator<JsonNode> it = content.elements(); it.hasNext(); i++) {
+        mapIds(path + "[" + i + "]", it.next(), maps);
+      }
+    }
   }
 
   private static JsonNode replaceTypeAnyWithString(String name, JsonNode content) {
@@ -127,7 +161,7 @@ public class GenerateSchemas {
             rtn1.set(key1, replaceTypeAnyWithString(key1, value1));
           }
         },
-        (rtn2, value2) -> rtn2.add(replaceTypeAnyWithString("", value2)));
+        (rtn2, i, value2) -> rtn2.add(replaceTypeAnyWithString("", value2)));
   }
 
   private static JsonNode replaceURNWithClass(JsonNode content) {
@@ -143,12 +177,22 @@ public class GenerateSchemas {
             rtn.set(key, replaceURNWithClass(value));
           }
         },
-        (rtn1, value1) -> rtn1.add(replaceURNWithClass(value1)));
+        (rtn1, i, value1) -> rtn1.add(replaceURNWithClass(value1)));
   }
 
   private static String replaceURN(String str) {
     return str.replace("urn:jsonschema:", "")
         .replace(':', '.');
+  }
+
+  private static JsonNode replaceDuplicates(String path, JsonNode content, Set<String> remove) {
+    return visitNodes("", content,
+        (rtn, name, key, value) -> {
+          if (!remove.contains(key) || !path.equals(".definitions")) {
+            rtn.set(key, replaceDuplicates(path + "." + key, value, remove));
+          }
+        },
+        (rtn1, i, value1) -> rtn1.add(replaceDuplicates(path + "[" + i + "]", value1, remove)));
   }
 
   private static JsonNode visitNodes(String name, JsonNode content,
@@ -162,9 +206,10 @@ public class GenerateSchemas {
       }
       return rtn;
     } else if (content.isContainerNode()) {
+      int i = 0;
       ArrayNode rtn = JSON_MAPPER.createArrayNode();
-      for (Iterator<JsonNode> it = content.elements(); it.hasNext(); ) {
-        consumeEl.accept(rtn, it.next());
+      for (Iterator<JsonNode> it = content.elements(); it.hasNext(); i++ ) {
+        consumeEl.accept(rtn, i, it.next());
       }
       return rtn;
     }

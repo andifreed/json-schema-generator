@@ -70,16 +70,6 @@
         }
       }
     },
-    "urn:jsonschema:test:data:test1:AssignTo": {
-      "type": "object",
-      "id": "urn:jsonschema:test:data:test1:AssignTo",
-      "required": true,
-      "oneOf": [ {
-        "$ref": "urn:jsonschema:test:data:test1:AssignToDefault"
-      }, {
-        "$ref": "urn:jsonschema:test:data:test1:AssignToGroup"
-      } ]
-    },
     "urn:jsonschema:test:data:test1:AssignToDefault": {
       "type": "object",
       "id": "urn:jsonschema:test:data:test1:AssignToDefault",
