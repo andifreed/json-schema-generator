@@ -69,10 +69,10 @@ public class GenerateSchemas {
   }
 
   static JsonSchema generateSchemaFromJavaClass(SchemaFactoryWrapper visitor, Class<?> classToGenerate)
-    throws JsonMappingException {
+      throws JsonMappingException {
     ObjectMapper mapper = new ObjectMapper()
-      .configure(MapperFeature.SORT_PROPERTIES_ALPHABETICALLY, true)
-      .enable(ORDER_MAP_ENTRIES_BY_KEYS);
+        .configure(MapperFeature.SORT_PROPERTIES_ALPHABETICALLY, true)
+        .enable(ORDER_MAP_ENTRIES_BY_KEYS);
 
     JsonSchema schema = generateSchemaFromJavaClass(visitor, mapper, classToGenerate);
     addClassDescription(schema, classToGenerate);
@@ -93,18 +93,13 @@ public class GenerateSchemas {
   }
 
   /**
-   * This does not deal well with subclass, the superclass will appear as the only valid value
-   * in the
+   * This will extract the schema from the class, and keep it as a map so it can be processed.
    *
-   * @param configClass the classes to dump
-   * @return the resulting string
-   * @throws JsonProcessingException on jackson errors
+   * @param configClass    the root of the graph
+   * @param urnToClassName whether to use class names or urn names
+   * @return the json nodes
+   * @throws JsonProcessingException if the definition are in error
    */
-  public static String serializeSchemaForDoc(Class<?> configClass) throws JsonProcessingException {
-    JsonNode transformed = createSchemaForDoc(configClass, true);
-    return JSON_MAPPER.writerWithDefaultPrettyPrinter().writeValueAsString(transformed);
-  }
-
   public static JsonNode createSchemaForDoc(Class<?> configClass, boolean urnToClassName) throws JsonProcessingException {
     JsonSchema jsonSchema = GenerateSchemas.generateSchemaFromJavaClass(configClass);
     JsonNode wrk = JSON_MAPPER.valueToTree(jsonSchema);
@@ -115,57 +110,40 @@ public class GenerateSchemas {
     return wrk;
   }
 
-  private static JsonNode replaceTypeAnyWithString(String name, JsonNode content) {
-    if (content.isObject()) {
-      ObjectNode rtn = JSON_MAPPER.createObjectNode();
-      for (Iterator<Map.Entry<String, JsonNode>> it = content.fields(); it.hasNext(); ) {
-        Map.Entry<String, JsonNode> entry = it.next();
-        String key = entry.getKey();
-        JsonNode value = entry.getValue();
-        if ("type".equals(key) && "any".equals(value.textValue()) && !"additionalProperties".equals(name)) {
-          rtn.set(key, new TextNode("string"));
-        } else {
-          rtn.set(key, replaceTypeAnyWithString(key, value));
-        }
-      }
-      return rtn;
-    } else if (content.isContainerNode()) {
-      ArrayNode rtn = JSON_MAPPER.createArrayNode();
-      for (Iterator<JsonNode> it = content.elements(); it.hasNext(); ) {
-        rtn.add(replaceTypeAnyWithString("", it.next()));
-      }
-      return rtn;
-    }
-    return content;
+  private interface ConsumeObjProp {
+    void accept(ObjectNode rtn, String objName, String propName, JsonNode value);
+  }
 
+  private interface ConsumeArray {
+    void accept(ArrayNode rtn, JsonNode value);
+  }
+
+  private static JsonNode replaceTypeAnyWithString(String name, JsonNode content) {
+    return visitNodes(name, content,
+        (rtn1, name1, key1, value1) -> {
+          if ("type".equals(key1) && "any".equals(value1.textValue()) && !"additionalProperties".equals(name1)) {
+            rtn1.set(key1, new TextNode("string"));
+          } else {
+            rtn1.set(key1, replaceTypeAnyWithString(key1, value1));
+          }
+        },
+        (rtn2, value2) -> rtn2.add(replaceTypeAnyWithString("", value2)));
   }
 
   private static JsonNode replaceURNWithClass(JsonNode content) {
-    if (content.isObject()) {
-      ObjectNode rtn = JSON_MAPPER.createObjectNode();
-      for (Iterator<Map.Entry<String, JsonNode>> it = content.fields(); it.hasNext(); ) {
-        Map.Entry<String, JsonNode> entry = it.next();
-        String key = entry.getKey();
-        JsonNode value = entry.getValue();
-        if (key.startsWith("urn:jsonschema:")) {
-          key = replaceURN(key);
-        }
-        if (("id".equals(key) || "$ref".equals(key)) && value.isTextual() && value.textValue().startsWith("urn:jsonschema:")) {
-          String replace = replaceURN(value.textValue());
-          rtn.put(key, replace);
-        } else {
-          rtn.set(key, replaceURNWithClass(value));
-        }
-      }
-      return rtn;
-    } else if (content.isContainerNode()) {
-      ArrayNode rtn = JSON_MAPPER.createArrayNode();
-      for (Iterator<JsonNode> it = content.elements(); it.hasNext(); ) {
-        rtn.add(replaceURNWithClass(it.next()));
-      }
-      return rtn;
-    }
-    return content;
+    return visitNodes("", content,
+        (rtn, name, key, value) -> {
+          if (key.startsWith("urn:jsonschema:")) {
+            key = replaceURN(key);
+          }
+          if (("id".equals(key) || "$ref".equals(key)) && value.isTextual() && value.textValue().startsWith("urn:jsonschema:")) {
+            String replace = replaceURN(value.textValue());
+            rtn.put(key, replace);
+          } else {
+            rtn.set(key, replaceURNWithClass(value));
+          }
+        },
+        (rtn1, value1) -> rtn1.add(replaceURNWithClass(value1)));
   }
 
   private static String replaceURN(String str) {
@@ -173,6 +151,38 @@ public class GenerateSchemas {
         .replace(':', '.');
   }
 
+  private static JsonNode visitNodes(String name, JsonNode content,
+                                     ConsumeObjProp consumeProp,
+                                     ConsumeArray consumeEl) {
+    if (content.isObject()) {
+      ObjectNode rtn = JSON_MAPPER.createObjectNode();
+      for (Iterator<Map.Entry<String, JsonNode>> it = content.fields(); it.hasNext(); ) {
+        Map.Entry<String, JsonNode> entry = it.next();
+        consumeProp.accept(rtn, name, entry.getKey(), entry.getValue());
+      }
+      return rtn;
+    } else if (content.isContainerNode()) {
+      ArrayNode rtn = JSON_MAPPER.createArrayNode();
+      for (Iterator<JsonNode> it = content.elements(); it.hasNext(); ) {
+        consumeEl.accept(rtn, it.next());
+      }
+      return rtn;
+    }
+    return content;
+  }
+
+  /**
+   * This will extract the schema, optionally modify the id values, fix the any type to string, and optional
+   * test for changes against resource files.
+   *
+   * @param classToGenerate  the root of the graph
+   * @param urnToClassName   whether to write class names or urn names
+   * @param resClassLoader   the test class loader (if you want to use test resources to verify for changes)
+   * @param writeYamlToBuild whether to write yaml version to build/test/reports
+   * @param handleFailure    if restClassLoader specified, then this will be called on an error (i.e., to set fail test)
+   * @return the string with the content.
+   * @throws IOException on read errors
+   */
   public static String genJsonForAClass(Class<?> classToGenerate, boolean urnToClassName, ClassLoader resClassLoader,
                                         boolean writeYamlToBuild, Runnable handleFailure) throws IOException {
     JsonNode schemaNodes = createSchemaForDoc(classToGenerate, urnToClassName);
@@ -181,8 +191,8 @@ public class GenerateSchemas {
     }
     String content = JSON_MAPPER.writerWithDefaultPrettyPrinter()
         .writeValueAsString(schemaNodes)
-        .replace("\" :","\":")
-        .replace("\r","");
+        .replace("\" :", "\":")
+        .replace("\r", "");
     if (resClassLoader != null) {
       String resName = classToGenerate.getSimpleName() + ".schema.json";
       InputStream resource = resClassLoader.getResourceAsStream(resName);
@@ -197,6 +207,7 @@ public class GenerateSchemas {
     return content;
   }
 
+  @SuppressWarnings("SameParameterValue")
   private static void writeYaml(String dirName, Class<?> classToGenerate, JsonNode schema) throws IOException {
     File yamlFile = new File(dirName + "/" + classToGenerate.getSimpleName() + ".schema.yaml");
     if (yamlFile.getParentFile().mkdirs()) {
@@ -205,6 +216,7 @@ public class GenerateSchemas {
     Files.write(yamlFile.toPath(), YAML_MAPPER.writeValueAsString(schema).getBytes(StandardCharsets.UTF_8));
   }
 
+  @SuppressWarnings("SameParameterValue")
   private static void writeJson(String dirName, String resName, String content) throws IOException {
     File outFile = new File(dirName + "/" + resName);
     if (outFile.getParentFile().mkdirs()) {
