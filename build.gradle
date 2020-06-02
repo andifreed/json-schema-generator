@@ -12,12 +12,42 @@ buildscript {
 plugins {
     id 'java'
 }
+apply plugin: "io.freefair.lombok"
 
 repositories {
     jcenter()
 }
 
-apply plugin: "io.freefair.lombok"
+project.version="1.0.1"
+
+jar {
+    archiveVersion.set("${project.version}")
+    manifest {
+        attributes(
+            'Copyright': "Apache License. Version 2.0.",
+            'Build-Timestamp': new Date().format("yyyy-MM-dd'T'HH:mm:ss.SSSZ"),
+            'Implementation-Title': "//github.com/andifreed/json-schema-generator",
+            'Implementation-Version': "${project.version}",
+            'Created-By': "Gradle ${gradle.gradleVersion}",
+            'Build-Jdk': "${System.properties['java.version']} (${System.properties['java.vendor']} ${System.properties['java.vm.version']})",
+            'Build-OS': "${System.properties['os.name']} ${System.properties['os.arch']} ${System.properties['os.version']}"
+        )
+    }
+}
+
+Task jdJar = task javadocJar(type: Jar, dependsOn: javadoc) {
+    classifier = 'javadoc'
+    from javadoc.destinationDir
+}
+
+Task srcJar = task sourcesJar(type: Jar, dependsOn: compileJava) {
+    classifier = 'sources'
+    from sourceSets.main.allJava
+}
+
+Task jarTask = tasks.findByPath("jar")
+jarTask.finalizedBy(jdJar)
+jarTask.finalizedBy(srcJar)
 
 dependencies {
     compile "com.fasterxml.jackson.module:jackson-module-jsonSchema:2.9.8"
