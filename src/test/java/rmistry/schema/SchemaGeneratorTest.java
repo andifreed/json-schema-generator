@@ -43,6 +43,23 @@ public class SchemaGeneratorTest {
         () -> softly.fail("The schema has changed\n" +
             "Replaced the content in test/resources for " + ConfigEx.class.getSimpleName() + "\n"));
     softly.assertThat(content).doesNotContain("urn:jsonschema");
+    softly.assertThat(content).contains(
+        "\"id\": \"test.data.test2.ApiKeyAuthEx\"",
+        "\"id\": \"test.data.test2.AuthMethodEx\"",
+        "\"id\": \"test.data.test2.BackoffEx\"",
+        "\"id\": \"test.data.test2.CircuitBreakerSetupEx\"",
+        "\"id\": \"test.data.test2.ConfigEx\"",
+        "\"id\": \"test.data.test2.ConstantExponentialBackoffEx\"",
+        "\"id\": \"test.data.test2.CredentialsEx\"",
+        "\"id\": \"test.data.test2.EventHandlerSetupEx\"",
+        "\"id\": \"test.data.test2.FallbackSetupEx\"",
+        "\"id\": \"test.data.test2.HttpBasicAuthEx\"",
+        "\"id\": \"test.data.test2.InterceptorSetupEx\"",
+        "\"id\": \"test.data.test2.OAuthEx\"",
+        "\"id\": \"test.data.test2.RandomExponentialBackoffEx\"",
+        "\"id\": \"test.data.test2.RetrySetupEx\"",
+        "\"id\": \"test.data.test2.SSLSetupEx\"",
+        "\"id\": \"test.data.test2.TimeoutSetupEx\"");
   }
 
   @Test

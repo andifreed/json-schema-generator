@@ -31,7 +31,6 @@ SOFTWARE.
 package rmistry.schema;
 
 import com.fasterxml.jackson.annotation.JsonClassDescription;
-import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
@@ -49,6 +48,8 @@ import com.fasterxml.jackson.module.jsonSchema.factories.SchemaFactoryWrapper;
 import com.fasterxml.jackson.module.jsonSchema.factories.VisitorContext;
 import com.fasterxml.jackson.module.jsonSchema.factories.WrapperFactory;
 import com.fasterxml.jackson.module.jsonSchema.types.AnySchema;
+import com.fasterxml.jackson.module.jsonSchema.types.ArraySchema;
+import com.fasterxml.jackson.module.jsonSchema.types.NullSchema;
 import com.fasterxml.jackson.module.jsonSchema.types.ObjectSchema;
 import com.fasterxml.jackson.module.jsonSchema.types.ReferenceSchema;
 import com.fasterxml.jackson.module.jsonSchema.types.StringSchema;
@@ -179,76 +180,80 @@ class CustomSchemaFactoryWrapper extends SchemaFactoryWrapper {
     }
 
     private JsonSchema createOrGetSchema(BeanProperty prop) throws JsonMappingException {
-      JavaType type = prop.getType();
-      if (Class.class.equals(type.getRawClass())) {
+      JsonSchema schema = getOrCreateSchema(prop.getType(), prop);
+      addPropDescription(schema, prop);
+      return schema;
+    }
+
+    private JsonSchema getOrCreateSchema(JavaType type, BeanProperty prop) throws JsonMappingException {
+      Class<?> rawClass = type.getRawClass();
+      String refId = javaTypeToUrn(rawClass);
+      if (Class.class.equals(rawClass)) {
         StringSchema clsSchema = new StringSchema();
-        String id = javaTypeToUrn(Class.class);
-        clsSchema.set$ref(id);
-        addPropDescription(clsSchema, prop);
+        clsSchema.set$ref(refId);
         return clsSchema; // if schema for class already generated exit
-      }
-      else if (isModel(type)) {
-        Class<?> rawClass = type.getRawClass();
-        String refId = javaTypeToUrn(rawClass);
+      } else if (type.isCollectionLikeType()) {
+        ArraySchema arraySchema = new ArraySchema();
+        arraySchema.setItemsSchema(getOrCreateSchema(type.containedType(0), prop));
+        return arraySchema;
+      } else if (isModel(type)) {
         if (schemaFactory.globalDefinitionClasses.containsKey(refId)) {
-          JsonSchema schema = propertySchema(prop);
-          addPropDescription(schema, prop);
-          return schema; // if schema for class already generated exit
+          return new ReferenceSchema(refId);
         }
         ObjectSchema propSchema = new ObjectSchema();
         propSchema.setId(refId);
         // we are generating the class so flag it as built for recursion
         schemaFactory.globalDefinitionClasses.put(refId, propSchema);
-        Set<Object> inheritingClasses = new TreeSet<>(COMPARATOR);
-        for (Class<?> subClass : getAllJsonSubTypeClasses(rawClass)) {
-          String subClassRef = javaTypeToUrn(subClass);
-          inheritingClasses.add(new ReferenceSchema(subClassRef));
-          if (!schemaFactory.globalDefinitionClasses.containsKey(subClassRef)) {
-            SchemaFactoryWrapper visitor = getNewWrapper(schemaFactory);
-            try {
-              JsonSchema subClassSchema = GenerateSchemas.generateSchemaFromJavaClass(visitor, subClass);
-              addClassDescription(subClassSchema, subClass);
-              if (subClassSchema instanceof ObjectSchema) {
-                ((ObjectSchema) subClassSchema).rejectAdditionalProperties();
-              }
-              schemaFactory.globalDefinitionClasses.put(subClassRef, subClassSchema);
-            } catch (Exception ex) {
-              throw JsonMappingException.from(visitor.getProvider(), "Exception occurred", ex);
-            }
-          }
+        if (!handleSubClasses(rawClass, propSchema)) {
+          return createNewClass(rawClass, refId);
         }
-
-        if (inheritingClasses.size() > 0) {
-          propSchema.setOneOf(inheritingClasses);
-        } else {
-          SchemaFactoryWrapper visitor = getNewWrapper(schemaFactory);
-          try {
-            JsonSchema subClassSchema = GenerateSchemas.generateSchemaFromJavaClass(visitor, rawClass);
-            if (subClassSchema.getId() == null) {
-              subClassSchema.setId(javaTypeToUrn(type.getRawClass()));
-            }
-            schemaFactory.globalDefinitionClasses.put(refId, subClassSchema);
-          } catch (Exception ex) {
-            ex.printStackTrace();
-            throw JsonMappingException.from(visitor.getProvider(), "Exception occurred", ex);
-          }
-        }
-
-        propSchema.setRequired(rawClass.isAnnotationPresent(JsonInclude.class));
-        addPropDescription(propSchema, prop);
         return propSchema;
       }
-      JsonSchema propSchema = propertySchema(prop);
-      addPropDescription(propSchema, prop);
-      return propSchema;
+      return propertySchema(prop);
     }
 
+    private boolean handleSubClasses(Class<?> rawClass, ObjectSchema propSchema) throws JsonMappingException {
+      Set<Object> inheritingClasses = new TreeSet<>(COMPARATOR);
+      for (Class<?> subClass : getAllJsonSubTypeClasses(rawClass)) {
+        String subClassRef = javaTypeToUrn(subClass);
+        inheritingClasses.add(new ReferenceSchema(subClassRef));
+        if (!schemaFactory.globalDefinitionClasses.containsKey(subClassRef)) {
+          createNewClass(subClass, subClassRef);
+        }
+      }
+      if (inheritingClasses.size() > 0) {
+        propSchema.setOneOf(inheritingClasses);
+      } else {
+        return false;
+      }
+      return true;
+    }
+
+    private JsonSchema createNewClass(Class<?> rawClass, String refId) throws JsonMappingException {
+      SchemaFactoryWrapper visitor = getNewWrapper(schemaFactory);
+      try {
+        schemaFactory.globalDefinitionClasses.put(refId, new NullSchema());
+        JsonSchema subClassSchema = GenerateSchemas.generateSchemaFromJavaClass(visitor, rawClass);
+        schemaFactory.globalDefinitionClasses.put(refId, subClassSchema);
+        if (subClassSchema instanceof ObjectSchema) {
+          ((ObjectSchema) subClassSchema).rejectAdditionalProperties();
+        }
+        schemaFactory.globalDefinitionClasses.put(refId, subClassSchema);
+        return subClassSchema;
+      } catch (Exception ex) {
+        throw JsonMappingException.from(visitor.getProvider(), "Exception occurred", ex);
+      }
+    }
   }
 
   private void addPropDescription(JsonSchema schema, BeanProperty property) {
-    JsonPropertyDescription annotation = property.getAnnotation(JsonPropertyDescription.class);
-    if (annotation != null) {
-      schema.setDescription(annotation.value());
+    JsonPropertyDescription propDescAnn = property.getAnnotation(JsonPropertyDescription.class);
+    if (propDescAnn != null) {
+      schema.setDescription(propDescAnn.value());
+    }
+    JsonProperty propAnn = property.getAnnotation(JsonProperty.class);
+    if (propAnn != null && propAnn.required()) {
+      schema.setRequired(true);
     }
   }
 

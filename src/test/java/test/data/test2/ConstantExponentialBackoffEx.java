@@ -9,8 +9,6 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 
-import java.time.Duration;
-
 @Data
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Builder(builderClassName = "Builder", toBuilder = true)
@@ -22,7 +20,7 @@ public class ConstantExponentialBackoffEx implements BackoffEx {
   private final String type = TYPE;
   @JsonPropertyDescription("This is the back off period, its a duration, json treats this as float seconds."
     + " Default is 500 millisecs, which would appear at 0.5.")
-  private final Duration interval;
+  private final Double intervalSecs;
   @JsonPropertyDescription("this is the back off multiple, default is 1.5")
   private final Double multiplier;
 

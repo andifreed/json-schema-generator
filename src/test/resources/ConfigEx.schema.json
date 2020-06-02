@@ -9,6 +9,7 @@
       "items": {
         "type": "object",
         "id": "test.data.test2.InterceptorSetupEx",
+        "additionalProperties": false,
         "properties": {
           "interceptorSupplierClass": {
             "type": "string",
@@ -29,7 +30,6 @@
     "auth": {
       "type": "object",
       "id": "test.data.test2.AuthMethodEx",
-      "required": false,
       "description": "This is how to authenticate: 'HttpBasic', 'HttpBearer', 'ApiKey', or 'OAuth' are supported, each has specific attributes based on their 'method' property.",
       "oneOf": [ {
         "$ref": "test.data.test2.ApiKeyAuthEx"
@@ -51,11 +51,13 @@
       "items": {
         "type": "object",
         "id": "test.data.test2.EventHandlerSetupEx",
-        "properties": {
-          "type": {
-            "type": "string"
-          }
-        }
+        "oneOf": [ {
+          "$ref": "test.data.test2.CircuitBreakerSetupEx"
+        }, {
+          "$ref": "test.data.test2.FallbackSetupEx"
+        }, {
+          "$ref": "test.data.test2.RetrySetupEx"
+        } ]
       }
     },
     "loggerName": {
@@ -70,14 +72,45 @@
     "ssl": {
       "type": "object",
       "id": "test.data.test2.SSLSetupEx",
-      "required": false,
-      "description": "This is setup information for ssl or tls."
+      "description": "This is setup information for ssl or tls.",
+      "additionalProperties": false,
+      "properties": {
+        "factorySupplierClass": {
+          "type": "string",
+          "$ref": "java.lang.Class",
+          "required": true,
+          "description": "this is a function class that accepts a Map<String,String> and returns an object that implements SSLSocketFactory"
+        },
+        "hostnameVerifierSupplierClass": {
+          "type": "string",
+          "$ref": "java.lang.Class",
+          "required": true,
+          "description": "this is a function class that accepts a Map<String,String> and returns an object that implements HostnameVerifier"
+        },
+        "properties": {
+          "type": "object",
+          "description": "this is the map passed to the functions",
+          "additionalProperties": {
+            "type": "string"
+          }
+        }
+      }
     },
     "timeout": {
       "type": "object",
       "id": "test.data.test2.TimeoutSetupEx",
-      "required": false,
-      "description": "This is timeout information."
+      "description": "This is timeout information.",
+      "additionalProperties": false,
+      "properties": {
+        "connectTimeoutMillis": {
+          "type": "integer",
+          "required": true
+        },
+        "readTimeoutMillis": {
+          "type": "integer",
+          "required": true
+        }
+      }
     },
     "traceActionsClass": {
       "type": "string",
@@ -86,10 +119,29 @@
     }
   },
   "definitions": {
+    "test.data.test2.InterceptorSetupEx": {
+      "type": "object",
+      "id": "test.data.test2.InterceptorSetupEx",
+      "additionalProperties": false,
+      "properties": {
+        "interceptorSupplierClass": {
+          "type": "string",
+          "$ref": "java.lang.Class",
+          "required": true,
+          "description": "This is the supplier class, it will be passed the properties to get a RequestInterceptor implementation"
+        },
+        "properties": {
+          "type": "object",
+          "description": "This is a map of name/value that will be passed to the supplier",
+          "additionalProperties": {
+            "type": "string"
+          }
+        }
+      }
+    },
     "test.data.test2.AuthMethodEx": {
       "type": "object",
       "id": "test.data.test2.AuthMethodEx",
-      "required": false,
       "description": "This is how to authenticate: 'HttpBasic', 'HttpBearer', 'ApiKey', or 'OAuth' are supported, each has specific attributes based on their 'method' property.",
       "oneOf": [ {
         "$ref": "test.data.test2.ApiKeyAuthEx"
@@ -201,28 +253,6 @@
         }
       }
     },
-    "test.data.test2.CredentialsEx": {
-      "type": "object",
-      "id": "test.data.test2.CredentialsEx",
-      "properties": {
-        "clientId": {
-          "type": "string",
-          "description": "this is the client id, this can also be supplied by the credential supplier configured with oath"
-        },
-        "clientSecret": {
-          "type": "string",
-          "description": "this is the client secret, this can also be supplied by the credential supplier configured with oath"
-        },
-        "password": {
-          "type": "string",
-          "description": "this is the password, this can also be supplied by the credential supplier configured with oath"
-        },
-        "username": {
-          "type": "string",
-          "description": "this is the username, this can also be supplied by the credential supplier configured with oath"
-        }
-      }
-    },
     "test.data.test2.OAuthEx": {
       "type": "object",
       "id": "test.data.test2.OAuthEx",
@@ -240,8 +270,26 @@
         "credentials": {
           "type": "object",
           "id": "test.data.test2.CredentialsEx",
-          "required": false,
-          "description": "this is the Credentials, these values can also be provided by the CredentialProvider"
+          "description": "this is the Credentials, these values can also be provided by the CredentialProvider",
+          "additionalProperties": false,
+          "properties": {
+            "clientId": {
+              "type": "string",
+              "description": "this is the client id, this can also be supplied by the credential supplier configured with oath"
+            },
+            "clientSecret": {
+              "type": "string",
+              "description": "this is the client secret, this can also be supplied by the credential supplier configured with oath"
+            },
+            "password": {
+              "type": "string",
+              "description": "this is the password, this can also be supplied by the credential supplier configured with oath"
+            },
+            "username": {
+              "type": "string",
+              "description": "this is the username, this can also be supplied by the credential supplier configured with oath"
+            }
+          }
         },
         "flow": {
           "type": "string",
@@ -277,9 +325,224 @@
         }
       }
     },
+    "test.data.test2.CredentialsEx": {
+      "type": "object",
+      "id": "test.data.test2.CredentialsEx",
+      "description": "this is the Credentials, these values can also be provided by the CredentialProvider",
+      "additionalProperties": false,
+      "properties": {
+        "clientId": {
+          "type": "string",
+          "description": "this is the client id, this can also be supplied by the credential supplier configured with oath"
+        },
+        "clientSecret": {
+          "type": "string",
+          "description": "this is the client secret, this can also be supplied by the credential supplier configured with oath"
+        },
+        "password": {
+          "type": "string",
+          "description": "this is the password, this can also be supplied by the credential supplier configured with oath"
+        },
+        "username": {
+          "type": "string",
+          "description": "this is the username, this can also be supplied by the credential supplier configured with oath"
+        }
+      }
+    },
+    "test.data.test2.EventHandlerSetupEx": {
+      "type": "object",
+      "id": "test.data.test2.EventHandlerSetupEx",
+      "oneOf": [ {
+        "$ref": "test.data.test2.CircuitBreakerSetupEx"
+      }, {
+        "$ref": "test.data.test2.FallbackSetupEx"
+      }, {
+        "$ref": "test.data.test2.RetrySetupEx"
+      } ]
+    },
+    "test.data.test2.CircuitBreakerSetupEx": {
+      "type": "object",
+      "id": "test.data.test2.CircuitBreakerSetupEx",
+      "additionalProperties": false,
+      "properties": {
+        "automaticTransitionFromOpenToHalfOpenEnabled": {
+          "type": "boolean"
+        },
+        "failureRateThreshold": {
+          "type": "number",
+          "description": "This is the percentage (n/100) failure threshold, default 50"
+        },
+        "minimumNumberOfCalls": {
+          "type": "integer",
+          "description": "Minimum number of calls, no action before this, default 100"
+        },
+        "name": {
+          "type": "string",
+          "description": "This is a name for logging"
+        },
+        "permittedNumberOfCallsInHalfOpenState": {
+          "type": "integer",
+          "description": "Permitted number of calls in half open, default 10"
+        },
+        "properties": {
+          "type": "object",
+          "description": "this is a map of name/values which will be passed to the recordExceptionSupplier to to get the recordException implementation.",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "recordExceptionSupplierClass": {
+          "type": "string",
+          "$ref": "java.lang.Class"
+        },
+        "slidingWindowSize": {
+          "type": "integer",
+          "description": "Sliding window size, default 100"
+        },
+        "slidingWindowType": {
+          "type": "string",
+          "description": "This is a how to determine the count, default is COUNT_BASED, alternative is TIME_BASED"
+        },
+        "slowCallDurationThresholdSec": {
+          "type": "number",
+          "description": "Wait duration, decimal seconds, .5 would be 500 mill seconds, default 60"
+        },
+        "slowCallRateThreshold": {
+          "type": "number",
+          "description": "This is the percentage (n/100) failure threshold, default 50"
+        },
+        "type": {
+          "type": "string"
+        },
+        "waitIntervalFunctionInOpenStateSupplierClass": {
+          "type": "string",
+          "$ref": "java.lang.Class",
+          "description": "This is a supplier for an Interval function, the supplier will be passed the properties below"
+        },
+        "writableStackTraceEnabled": {
+          "type": "boolean",
+          "description": "Write stacktrace, default true"
+        }
+      }
+    },
+    "test.data.test2.FallbackSetupEx": {
+      "type": "object",
+      "id": "test.data.test2.FallbackSetupEx",
+      "additionalProperties": false,
+      "properties": {
+        "exceptionHandlerClass": {
+          "type": "string",
+          "$ref": "java.lang.Class",
+          "description": "this is the exception handler class to instantiate, it should be thread safe"
+        },
+        "exceptionTypes": {
+          "type": "array",
+          "required": true,
+          "description": "this is the exception classes that this fallback deals with",
+          "items": {
+            "type": "string",
+            "$ref": "java.lang.Class"
+          }
+        },
+        "type": {
+          "type": "string",
+          "required": true,
+          "description": "this is must be 'fallback' to setup a FallbackSetup"
+        }
+      }
+    },
+    "test.data.test2.RetrySetupEx": {
+      "type": "object",
+      "id": "test.data.test2.RetrySetupEx",
+      "additionalProperties": false,
+      "properties": {
+        "backoff": {
+          "type": "object",
+          "id": "test.data.test2.BackoffEx",
+          "oneOf": [ {
+            "$ref": "test.data.test2.ConstantExponentialBackoffEx"
+          }, {
+            "$ref": "test.data.test2.RandomExponentialBackoffEx"
+          } ]
+        },
+        "intervalFunctionClass": {
+          "type": "string",
+          "$ref": "java.lang.Class"
+        },
+        "maxAttempts": {
+          "type": "integer"
+        },
+        "name": {
+          "type": "string"
+        },
+        "retryOnExceptionPredicateClass": {
+          "type": "string",
+          "$ref": "java.lang.Class"
+        },
+        "retryOnResultPredicateClass": {
+          "type": "string",
+          "$ref": "java.lang.Class"
+        },
+        "type": {
+          "type": "string"
+        }
+      }
+    },
+    "test.data.test2.BackoffEx": {
+      "type": "object",
+      "id": "test.data.test2.BackoffEx",
+      "oneOf": [ {
+        "$ref": "test.data.test2.ConstantExponentialBackoffEx"
+      }, {
+        "$ref": "test.data.test2.RandomExponentialBackoffEx"
+      } ]
+    },
+    "test.data.test2.ConstantExponentialBackoffEx": {
+      "type": "object",
+      "id": "test.data.test2.ConstantExponentialBackoffEx",
+      "additionalProperties": false,
+      "properties": {
+        "intervalSecs": {
+          "type": "number",
+          "description": "This is the back off period, its a duration, json treats this as float seconds. Default is 500 millisecs, which would appear at 0.5."
+        },
+        "multiplier": {
+          "type": "number",
+          "description": "this is the back off multiple, default is 1.5"
+        },
+        "type": {
+          "type": "string",
+          "required": true,
+          "description": "This is required to be 'exponential' for ConstantExponentialBackoffEx"
+        }
+      }
+    },
+    "test.data.test2.RandomExponentialBackoffEx": {
+      "type": "object",
+      "id": "test.data.test2.RandomExponentialBackoffEx",
+      "additionalProperties": false,
+      "properties": {
+        "intervalSecs": {
+          "type": "number"
+        },
+        "multiplier": {
+          "type": "number"
+        },
+        "randomizationFactor": {
+          "type": "number"
+        },
+        "type": {
+          "type": "string",
+          "required": true,
+          "description": "This is required to be 'random' for RandomExponentialBackoffEx"
+        }
+      }
+    },
     "test.data.test2.SSLSetupEx": {
       "type": "object",
       "id": "test.data.test2.SSLSetupEx",
+      "description": "This is setup information for ssl or tls.",
+      "additionalProperties": false,
       "properties": {
         "factorySupplierClass": {
           "type": "string",
@@ -305,6 +568,8 @@
     "test.data.test2.TimeoutSetupEx": {
       "type": "object",
       "id": "test.data.test2.TimeoutSetupEx",
+      "description": "This is timeout information.",
+      "additionalProperties": false,
       "properties": {
         "connectTimeoutMillis": {
           "type": "integer",
